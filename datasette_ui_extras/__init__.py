@@ -12,5 +12,6 @@ def extra_css_urls(datasette):
 @hookimpl
 def extra_js_urls(datasette):
     return [
-        datasette.urls.static_plugins("datasette-ui-extras", "sticky-table-headers.js")
+        datasette.urls.static_plugins("datasette-ui-extras", "sticky-table-headers.js"),
+        datasette.urls.static_plugins("datasette-ui-extras", "focus-search-box.js")
     ]
