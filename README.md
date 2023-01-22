@@ -38,6 +38,7 @@ TBD
 
 - facets are re-styled (inspired by [datasette#1159](https://github.com/simonw/datasette/pull/1159))
 - tables have a "sticky" header that remains visible as you scroll (similar to "Freeze Rows" in Google Sheets)
+- pressing `/` focuses the search box on tables that have one
 
 ## Development
 
