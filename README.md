@@ -24,6 +24,10 @@ Install this plugin in the same environment as Datasette.
 
 TBD
 
+## Features
+
+- facets are re-styled (inspired by [datasette#1159](https://github.com/simonw/datasette/pull/1159))
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
