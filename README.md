@@ -7,12 +7,24 @@
 
 Add a few flourishes to the Datasette UI.
 
-People have proposed some great ideas to make the UI more discoverable, more useful,
-or more attractive. This plugin tries to be a canary channel for trying them out.
+This plugin collects UI tweaks that people have proposed for Datasette.
 
-The plugin will never damage your data. It might stop working if Datasette makes
-a breaking change -- in that case, you can uninstall the plugin while waiting
-for a fix.
+Compared to core Datasette, this plugin is more willing:
+
+- to use features that require more modern browsers
+- to add features that require storing state (e.g., a visitor's
+  preferences about how to view a table)
+- to require JavaScript
+- to release UI changes
+
+I think these are generally reasonable tradeoffs -- as a plugin that users opt-in
+to, we have the luxury of being more aggressive in our minimum requirements
+and release cadence.
+
+If Datasette makes a breaking change, the plugin may stop working. In that case,
+you can uninstall the plugin while waiting for a fix.
+
+OK, that's enough disclaimers.
 
 ## Installation
 
@@ -27,6 +39,7 @@ TBD
 ## Features
 
 - facets are re-styled (inspired by [datasette#1159](https://github.com/simonw/datasette/pull/1159))
+- tables have "sticky" headers (
 
 ## Development
 

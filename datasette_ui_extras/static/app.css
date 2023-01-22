@@ -47,3 +47,9 @@ ul.tight-bullets li {
 .facet-info li:hover {
   background: #8872;
 }
+
+.rows-and-columns thead {
+  background-color: white;
+  position: sticky;
+  top: 0;
+}
