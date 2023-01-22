@@ -1,0 +1,49 @@
+a:visited {
+  color: #041C8E;
+}
+
+a:hover,
+a:focus,
+a:active  {
+  color: #07407B;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+ul.tight-bullets li {
+  list-style-type: initial;
+}
+
+.facet-info-name {
+  text-align: center;
+  font-family: Helvetica, sans-serif;
+  font-size: 1.2em;
+  letter-spacing: 1px;
+}
+
+.facet-results {
+  justify-content: space-around;
+}
+
+.facet-info {
+  width: auto;
+  border: 0px solid #8872;
+  padding: 10px;
+}
+
+.facet-info li,
+.facet-info ul {
+  padding-bottom: 3px;
+  padding-top: 3px;
+}
+
+.facet-info li {
+  border-bottom: 1px solid #8872;
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+.facet-info li:hover {
+  background: #8872;
+}
