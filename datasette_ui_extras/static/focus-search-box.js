@@ -11,6 +11,9 @@
       if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT')
         return;
 
+      if (e.key !== '/')
+        return;
+
       box.focus();
       e.preventDefault();
       return false;
