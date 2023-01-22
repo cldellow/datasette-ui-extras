@@ -5,8 +5,6 @@
 [![Tests](https://github.com/cldellow/datasette-ui-extras/workflows/Test/badge.svg)](https://github.com/cldellow/datasette-ui-extras/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/cldellow/datasette-ui-extras/blob/main/LICENSE)
 
-Add a few flourishes to the Datasette UI.
-
 This plugin collects UI tweaks that people have proposed for Datasette.
 
 Compared to core Datasette, this plugin is more willing:

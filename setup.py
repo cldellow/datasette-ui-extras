@@ -14,7 +14,7 @@ def get_long_description():
 
 setup(
     name="datasette-ui-extras",
-    description="Add a few flourishes to the Datasette UI",
+    description="Adds UI enhancements to Datasette",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     author="Colin Dellow",
