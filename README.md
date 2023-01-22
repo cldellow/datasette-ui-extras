@@ -39,7 +39,7 @@ TBD
 ## Features
 
 - facets are re-styled (inspired by [datasette#1159](https://github.com/simonw/datasette/pull/1159))
-- tables have "sticky" headers (
+- tables have a "sticky" header that remains visible as you scroll (similar to "Freeze Rows" in Google Sheets)
 
 ## Development
 
