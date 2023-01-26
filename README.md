@@ -14,6 +14,9 @@ Compared to core Datasette, this plugin is more willing:
   preferences about how to view a table)
 - to require JavaScript
 - to release UI changes
+- to release features that only work on smaller datasets
+  - 100 tables, with 1M rows? Sure.
+  - 100,000 tables, with 1B rows? No.
 
 I think these are generally reasonable tradeoffs -- as a plugin that users opt-in
 to, we have the luxury of being more aggressive in our minimum requirements
