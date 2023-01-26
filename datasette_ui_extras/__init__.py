@@ -1,7 +1,7 @@
 import json
 from datasette import hookimpl
 import markupsafe
-
+from .facets import enable_yolo_facets
 
 @hookimpl
 def extra_css_urls(datasette):
@@ -37,3 +37,7 @@ def render_cell(value):
         except:
             pass
     return value
+
+@hookimpl
+def startup():
+    enable_yolo_facets()
