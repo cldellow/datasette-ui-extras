@@ -1,0 +1,7 @@
+.rows-and-columns {
+  border-collapse: separate;
+}
+
+.rows-and-columns thead th {
+  border-bottom: 1px solid #aaa;
+}
