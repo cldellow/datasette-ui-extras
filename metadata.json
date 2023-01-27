@@ -10,7 +10,7 @@
         "global-power-plants": {
             "tables": {
                 "global-power-plants": {
-                    "facets": ["country_long", "owner", "primary_fuel"]
+                    "x-facets": ["country_long", "owner", "primary_fuel"]
                 }
             }
         }

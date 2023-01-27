@@ -43,5 +43,18 @@ def render_cell(value):
     return value
 
 @hookimpl
+def extra_body_script(template, database, table, columns, view_name, request, datasette):
+    if view_name != 'table':
+        return
+
+    # TODO: get the set of facets to render. This might come from metadata,
+    #       or from something that the facet classes stashed in the request
+    #       object
+
+    return '''
+__dux_facets = {};
+'''.format(json.dumps(['country_long', 'owner', 'primary_fuel']))
+
+@hookimpl
 def startup():
     enable_yolo_facets()
