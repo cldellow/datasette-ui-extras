@@ -37,6 +37,8 @@
 
   async function fetchFacets(facets) {
     const me = new URL(window.location.href);
+    // Facet counts should not depend on pagination location
+    me.searchParams.delete('_next');
     me.searchParams.set('_size', '0');
     me.searchParams.set('_nocount', '1');
     me.pathname += '.json';

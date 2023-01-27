@@ -53,7 +53,7 @@ def extra_body_script(template, database, table, columns, view_name, request, da
 
     return '''
 __dux_facets = {};
-'''.format(json.dumps(['country_long', 'owner', 'primary_fuel']))
+'''.format(json.dumps(['primary_fuel', 'country_long', 'owner']))
 
 @hookimpl
 def startup():
