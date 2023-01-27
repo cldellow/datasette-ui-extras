@@ -1,0 +1,15 @@
+.facet-table-wrapper {
+  display: flex;
+}
+
+.facet-results {
+  position: sticky;
+  max-height: 100vh;
+  overflow: auto;
+  display: block;
+  align-self: flex-start;
+  top: 0;
+  min-width: 20em;
+  justify-content: flex-start;
+  flex-direction: column;
+}

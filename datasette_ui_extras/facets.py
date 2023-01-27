@@ -31,10 +31,11 @@ def json_only(underlying):
     return rv
 
 def enable_yolo_facets():
-    facets.DateFacet.suggest = no_suggest
-    facets.ColumnFacet.suggest = no_suggest
-    facets.ArrayFacet.suggest = no_suggest
+    pass
+#    facets.DateFacet.suggest = no_suggest
+#    facets.ColumnFacet.suggest = no_suggest
+#    facets.ArrayFacet.suggest = no_suggest
 
-    facets.DateFacet.facet_results = json_only(DateFacet_facet_results)
-    facets.ColumnFacet.facet_results = json_only(ColumnFacet_facet_results)
-    facets.ArrayFacet.facet_results = json_only(ArrayFacet_facet_results)
+#    facets.DateFacet.facet_results = json_only(DateFacet_facet_results)
+#    facets.ColumnFacet.facet_results = json_only(ColumnFacet_facet_results)
+#    facets.ArrayFacet.facet_results = json_only(ArrayFacet_facet_results)
