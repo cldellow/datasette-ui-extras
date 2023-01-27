@@ -1,4 +1,4 @@
-body {
+body.table {
   display: none;
 }
 
@@ -20,4 +20,10 @@ body.lazy-facets-ready {
   min-width: 20em;
   justify-content: flex-start;
   flex-direction: column;
+}
+
+.facet-info-name {
+  position: sticky;
+  top: 0;
+  background: white;
 }
