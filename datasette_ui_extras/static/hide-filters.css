@@ -1,0 +1,26 @@
+body.table .filter-row {
+  display: none;
+}
+
+body.table.dux-show-filters .filter-row {
+  display: block;
+}
+
+
+body.table form.filters + p:has(a[title^="select"]) {
+  display: none;
+}
+
+body.table.dux-show-filters form.filters + p:has(a[title^="select"]) {
+  display: block;
+}
+
+.dux-toggle-show-filters, .dux-toggle-show-filters:hover {
+  filter: grayscale(100%);
+  text-decoration: none !important;
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  vertical-align: middle;
+}

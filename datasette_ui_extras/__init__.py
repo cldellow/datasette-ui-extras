@@ -9,17 +9,20 @@ PLUGIN = 'datasette-ui-extras'
 @hookimpl
 def extra_css_urls(datasette):
     return [
+        datasette.urls.static_plugins(PLUGIN, "app.css"),
         datasette.urls.static_plugins(PLUGIN, "hide-table-definition.css"),
         datasette.urls.static_plugins(PLUGIN, "sticky-table-headers.css"),
         datasette.urls.static_plugins(PLUGIN, "lazy-facets.css"),
+        datasette.urls.static_plugins(PLUGIN, "hide-filters.css"),
     ]
 
 @hookimpl
 def extra_js_urls(datasette):
     return [
+        datasette.urls.static_plugins(PLUGIN, 'hide-filters.js'),
         datasette.urls.static_plugins(PLUGIN, "sticky-table-headers.js"),
         datasette.urls.static_plugins(PLUGIN, "focus-search-box.js"),
-        datasette.urls.static_plugins(PLUGIN, 'lazy-facets.js')
+        datasette.urls.static_plugins(PLUGIN, 'lazy-facets.js'),
     ]
 
 @hookimpl
