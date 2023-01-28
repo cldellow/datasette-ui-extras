@@ -1,0 +1,7 @@
+#export {
+  display: none;
+}
+
+#export:target {
+  display: block;
+}
