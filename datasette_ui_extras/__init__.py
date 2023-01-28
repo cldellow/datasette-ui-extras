@@ -55,12 +55,6 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     # Infer the facets to render. This is... complicated.
     # Look in the query string: _facet, _facet_date, _facet_array
     # Also look in metadata: https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json
-
-
-
-    # TODO: get the set of facets to render. This might come from metadata,
-    #       or from something that the facet classes stashed in the request
-    #       object
     tables_metadata = datasette.metadata("tables", database=database) or {}
     table_metadata = tables_metadata.get(table) or {}
     configs = load_facet_configs(request, table_metadata)
@@ -82,6 +76,10 @@ def extra_body_script(template, database, table, columns, view_name, request, da
             param = '_facet'
             if type != 'column':
                 param += '_' + type
+
+            # TODO: see issue #31
+            # Huh, if I do _facet_array=tags, I still get simple as the inner key?
+            key = 'simple'
             facet_params.append({ 'param': param, 'column': facet['config'][key], 'source': facet['source'] })
 
     return '''

@@ -30,7 +30,8 @@ def facet_from_qs(args):
     elif key.startswith("_facet_"):
         type = key[len("_facet_") :]
         rv = {}
-        rv[type] = value
+        # TODO: see issue #31
+        rv['simple'] = value
         return rv
 
 Facet_get_configs = facets.Facet.get_configs
