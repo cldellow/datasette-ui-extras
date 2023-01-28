@@ -45,7 +45,7 @@ def render_cell(value):
             return rv
         except:
             pass
-    return value
+    return None
 
 @hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
