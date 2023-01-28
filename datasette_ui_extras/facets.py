@@ -22,16 +22,16 @@ def json_only(underlying):
     return rv
 
 def facet_from_qs(args):
-    for key in args:
-        value = args.get(key)
-        # Seems very gross that we have to hardcode this mapping?
-        if key == '_facet':
-            return { 'simple': value }
-        elif key.startswith("_facet_"):
-            type = key[len("_facet_") :]
-            rv = {}
-            rv[type] = value
-            return rv
+    key = args.get('_dux_facet')
+    value = args.get('_dux_facet_column')
+
+    if key == '_facet':
+        return { 'simple': value }
+    elif key.startswith("_facet_"):
+        type = key[len("_facet_") :]
+        rv = {}
+        rv[type] = value
+        return rv
 
 Facet_get_configs = facets.Facet.get_configs
 def patched_get_configs(self):
@@ -39,8 +39,6 @@ def patched_get_configs(self):
 
     # There will be exactly 1 facet query string parameter, like
     # _facet=xxx, _facet_date=xxx, _facet_array=xxx
-
-    print(self.request.url)
 
     from_qs = facet_from_qs(self.request.args)
 

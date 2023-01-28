@@ -42,9 +42,36 @@
     fetchFacets(__dux_facets);
   }
 
+  function fixupToggleUrl(toggle_url, oldQueryParams) {
+    if (!toggle_url.startsWith('http:') && !toggle_url.startsWith('https:')) {
+      toggle_url = window.location.protocol + '//' + window.location.host + toggle_url;
+    }
+    const url = new URL(toggle_url);
+    for (const [k, v] of Object.entries(oldQueryParams)) {
+      if (v === null)
+        url.searchParams.delete(k);
+      else {
+        url.searchParams.set(k, v);
+      }
+    }
+
+    url.pathname = url.pathname.replace('.json', '');
+    return url.toString();
+  }
+
   async function fetchFacets(facets) {
     const me = new URL(window.location.href);
     // Facet counts should not depend on pagination location
+
+    // TODO: we should stash the old values for _next/_size/_nocount and restore them
+    //       on each toggle_url that comes back
+    const oldQueryParams = {
+      '_next': me.searchParams.get('_next'),
+      '_size': me.searchParams.get('_size'),
+      '_nocount': me.searchParams.get('_nocount'),
+      '_dux_facet': null,
+      '_dux_facet_column': null,
+    };
     me.searchParams.delete('_next');
     me.searchParams.set('_size', '0');
     me.searchParams.set('_nocount', '1');
@@ -55,10 +82,10 @@
     const promises = [];
     for (const facet of facets) {
       const { param, source, column } = facet;
-      me.searchParams.set(param, column);
+      me.searchParams.set('_dux_facet', param);
+      me.searchParams.set('_dux_facet_column', column);
       const results = fetch(me.toString())
         .then((response) => response.json())
-        .then((data) => data);
       promises.push(results);
     }
 
@@ -70,9 +97,15 @@
       const first = await promises.shift();
       const facetInfo = first.facet_results[facet.column];
 
+
       if (!facetInfo) {
         // TODO: timed out? Show an error to the user.
         continue;
+      }
+
+      facetInfo.toggle_url = fixupToggleUrl(facetInfo.toggle_url, oldQueryParams);
+      for (const facetValue of facetInfo.results) {
+        facetValue.toggle_url = fixupToggleUrl(facetValue.toggle_url, oldQueryParams);
       }
 
       renderFacet(facetInfo);
@@ -83,7 +116,6 @@
 
   function renderFacet(facetInfo) {
     const facetResults = document.querySelector('.facet-results');
-    const { name, results, toggle_url, hideable, type } = facetInfo;
 
     // Borrowed from https://github.com/simonw/datasette/blob/3c352b7132ef09b829abb69a0da0ad00be5edef9/datasette/templates/_facet_results.html
     // Some things are not implemented:
