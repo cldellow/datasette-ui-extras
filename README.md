@@ -39,7 +39,10 @@ TBD
 
 ## Features
 
-- facets are re-styled (inspired by [datasette#1159](https://github.com/simonw/datasette/pull/1159))
+- facets are dramatically different
+    - shown as a sidebar on the left
+    - loaded via ajax to ensure fast pageloads
+    - facet suggestions are not a thing any longer; facet by the column menu
 - tables have a "sticky" header that remains visible as you scroll (similar to "Freeze Rows" in Google Sheets)
 - pressing `/` focuses the search box on tables that have one
 - JSON arrays of strings are displayed as a comma-separated list
