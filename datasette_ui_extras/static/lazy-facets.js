@@ -178,8 +178,34 @@
     }
 
     document.body.classList.add('facets-loaded');
+    createDataLists();
   }
 
+  // createDataLists is from Datasette: https://github.com/simonw/datasette/blob/0b4a28691468b5c758df74fa1d72a823813c96bf/datasette/static/table.js
+  // It runs too early, before we've loaded our facets, so we call it ourselves.
+  function createDataLists() {
+    var facetResults = document.querySelectorAll(
+      ".facet-results [data-column]"
+    );
+    Array.from(facetResults).forEach(function (facetResult) {
+      // Use link text from all links in the facet result
+      var links = Array.from(
+        facetResult.querySelectorAll("li:not(.facet-truncated) a")
+      );
+      // Create a datalist element
+      var datalist = document.createElement("datalist");
+      datalist.id = "datalist-" + facetResult.dataset.column;
+      // Create an option element for each link text
+      links.forEach(function (link) {
+        var option = document.createElement("option");
+        option.label = link.innerText;
+        option.value = link.dataset.facetValue;
+        datalist.appendChild(option);
+      });
+      // Add the datalist to the facet result
+      facetResult.appendChild(datalist);
+    });
+  }
   function renderFailedFacet(facet) {
     const facetResults = document.querySelector('.facet-results');
 
