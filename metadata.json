@@ -13,6 +13,14 @@
                     "label_column": "display_name"
                 }
             }
+        },
+        "superuser": {
+            "tables": {
+                "users": {
+                    "label_column": "display_name"
+                }
+            }
         }
+
     }
 }
