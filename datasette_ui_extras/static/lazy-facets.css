@@ -88,6 +88,17 @@ ul.tight-bullets li a {
   background: white;
 }
 
+@media only screen and (max-width: 576px) {
+  .facet-table-wrapper {
+    display: block;
+  }
+
+  .facet-results {
+    position: static;
+    max-height: initial;
+  }
+}
+
 
 /* a CSS spinner, from https://stephanwagner.me/only-css-loading-spinner
  * use: <div class='spinner-container'><div class="spinner"></div></div>
