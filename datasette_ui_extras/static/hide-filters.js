@@ -20,8 +20,18 @@
       document.body.classList.add('dux-show-filters');
       meWithShowFiltersToggled.searchParams.delete('_dux_show_filters');
       a.innerHTML = FilterSolid;
+
+      // Ensure that if the user is fiddling with filters, we keep them visible
+      // across form submits.
+      const hiddenInput = document.createElement('input');
+      hiddenInput.setAttribute('type', 'hidden');
+      hiddenInput.setAttribute('name', '_dux_show_filters');
+      hiddenInput.setAttribute('value', '1');
+
+      const filterForm = document.querySelector('form.filters');
+      filterForm.appendChild(hiddenInput);
     } else {
-      meWithShowFiltersToggled.searchParams.set('_dux_show_filters', '');
+      meWithShowFiltersToggled.searchParams.set('_dux_show_filters', '1');
       a.innerHTML = FilterOutline;
     }
 
