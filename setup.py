@@ -33,7 +33,7 @@ setup(
     packages=["datasette_ui_extras"],
     entry_points={"datasette": ["ui_extras = datasette_ui_extras"]},
     install_requires=["datasette"],
-    extras_require={"test": ["pytest", "pytest-asyncio", "pytest-watch"]},
+    extras_require={"test": ["pytest", "pytest-asyncio", "pytest-watch", "sqlite-utils"]},
     package_data={
         "datasette_ui_extras": ["static/*", "templates/*"]
     },
