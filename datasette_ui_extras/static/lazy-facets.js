@@ -89,7 +89,6 @@
     // Some things are not implemented:
     // - the css classes for db/table/column
     // - ability to expand truncated facets
-    // - nice thousands separators for counts
     const node = document.createElement('div');
     node.classList.add('facet-info');
     node.setAttribute('data-column', facetInfo.name);
@@ -97,9 +96,9 @@
     const listItems = [];
     for (const facetValue of facetInfo.results) {
       if (!facetValue.selected) {
-        listItems.push(`<li><a href="${facetValue.toggle_url}" data-facet-value="${facetValue.value}">${facetValue.label || '-'}</a> ${facetValue.count}</li>`);
+        listItems.push(`<li><a href="${facetValue.toggle_url}" data-facet-value="${facetValue.value}">${facetValue.label || '-'}</a> ${facetValue.count.toLocaleString()}</li>`);
       } else {
-        listItems.push(`<li>${facetValue.label || "-" } &middot; ${facetValue.count} <a href="${facetValue.toggle_url }" class="cross">&#x2716;</a></li>`);
+        listItems.push(`<li>${facetValue.label || "-" } &middot; ${facetValue.count.toLocaleString()} <a href="${facetValue.toggle_url }" class="cross">&#x2716;</a></li>`);
       }
     }
 
