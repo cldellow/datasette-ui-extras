@@ -1,7 +1,12 @@
 import time
+import re
+import json
 from datasette import facets
+from datasette.facets import load_facet_configs
 from datasette.utils import path_with_added_args
 from .facet_patches import ArrayFacet_facet_results
+
+likely_date_re = re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}')
 
 async def no_suggest(self):
     return []
@@ -102,4 +107,110 @@ def enable_yolo_facets():
     # We'd like to smuggle info about the current page's rows to our extra_body_script
     # handler.
     patch_TableView_data()
+
+def facets_extra_body_script(template, database, table, columns, view_name, request, datasette):
+    if view_name != 'table':
+        return
+
+    scripts = []
+
+    scripts.append(get_extra_body_script_for_dux_facets(template, database, table, view_name, request, datasette))
+
+    scripts.append(get_extra_body_script_for_dux_facet_suggestions(template, database, table, view_name, request, datasette))
+    return '''
+{}
+'''.format('\n'.join([script for script in scripts if script]))
+
+def get_extra_body_script_for_dux_facet_suggestions(template, database, table, view_name, request, datasette):
+    if not request._dux_rows:
+        return ''
+
+    num_rows = len(request._dux_rows)
+
+    columns = request._dux_rows[0].columns
+
+    nulls = [0] * num_rows
+    strs = [0] * num_rows
+    ints = [0] * num_rows
+    floats = [0] * num_rows
+    dates = [0] * num_rows
+    json_str_arrays = [0] * num_rows
+
+    for row in request._dux_rows:
+        for i, name in enumerate(row.columns):
+            value = row[name]
+
+            if value == None:
+                nulls[i] += 1
+            if isinstance(value, str):
+                strs[i] += 1
+
+                if (value.startswith('["') and value.endswith('"]')) or value == '[]':
+                    json_str_arrays[i] += 1
+
+                if likely_date_re.search(value):
+                    dates[i] += 1
+            if isinstance(value, int):
+                ints[i] += 1
+            if isinstance(value, float):
+                floats[i] += 1
+            print('{} {}'.format(name, row[name]))
+
+
+    #print('nulls: {}\nstrs: {}\nints: {}\nfloats: {}\ndates: {}\njson_str_arrays: {}\n'.format(nulls, strs, ints, floats, dates, json_str_arrays))
+
+    # Propose facets.
+    suggestions = []
+    for i, column in enumerate(columns):
+        rv = []
+
+        # Every column can be faceted by ColumnFacet
+        rv.append({ 'label': 'this', 'params': { '_facet': column }})
+
+        if json_str_arrays[i] > 0:
+            rv.append({ 'label': 'this (array)', 'params': { '_facet_array': column }})
+
+        if dates[i] > 0:
+            rv.append({ 'label': 'this (date)', 'params': { '_facet_date': column }})
+
+        suggestions.append(rv)
+
+    return '''
+__dux_facet_suggestions = {};
+'''.format(json.dumps(suggestions))
+
+def get_extra_body_script_for_dux_facets(template, database, table, view_name, request, datasette):
+    # Infer the facets to render. This is... complicated.
+    # Look in the query string: _facet, _facet_date, _facet_array
+    # Also look in metadata: https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json
+    tables_metadata = datasette.metadata("tables", database=database) or {}
+    table_metadata = tables_metadata.get(table) or {}
+    configs = load_facet_configs(request, table_metadata)
+
+    facet_params = []
+
+    # column and simple feel duplicative?
+    # { 'column': [ {'source': 'metadata', 'config': { 'simple': 'country_long' } } ] }
+    for type, facets in configs.items():
+        # Blech, _facet_size=max isn't actually a facet.
+        if type == 'size':
+            continue
+
+        key = 'simple'
+        if type != 'column':
+            key = type
+
+        for facet in facets:
+            param = '_facet'
+            if type != 'column':
+                param += '_' + type
+
+            # TODO: see issue #31
+            # Huh, if I do _facet_array=tags, I still get simple as the inner key?
+            key = 'simple'
+            facet_params.append({ 'param': param, 'column': facet['config'][key], 'source': facet['source'] })
+
+    return '''
+__dux_facets = {};
+'''.format(json.dumps(facet_params))
 

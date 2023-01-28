@@ -1,11 +1,17 @@
 import json
 from datasette import hookimpl
-from datasette.facets import load_facet_configs
 import markupsafe
-from .facets import enable_yolo_facets
+from .facets import enable_yolo_facets, facets_extra_body_script
 
 PLUGIN = 'datasette-ui-extras'
 
+# Not fully fleshed out: datasette-ui-extras consists of a bunch of "extras".
+# Each extra has one or more of: custom CSS, custom JS, custom Python.
+#
+# Try to develop them as though they're standalone things, so they can be
+# easily turned on/off, or upstreamed into Datasette.
+#
+# TODO: serve a minified/concatenated CSS/JS file
 @hookimpl
 def extra_css_urls(datasette):
     return [
@@ -52,42 +58,7 @@ def render_cell(value):
 
 @hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
-    if view_name != 'table':
-        return
-
-    # Infer the facets to render. This is... complicated.
-    # Look in the query string: _facet, _facet_date, _facet_array
-    # Also look in metadata: https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json
-    tables_metadata = datasette.metadata("tables", database=database) or {}
-    table_metadata = tables_metadata.get(table) or {}
-    configs = load_facet_configs(request, table_metadata)
-
-    facet_params = []
-
-    # column and simple feel duplicative?
-    # { 'column': [ {'source': 'metadata', 'config': { 'simple': 'country_long' } } ] }
-    for type, facets in configs.items():
-        # Blech, _facet_size=max isn't actually a facet.
-        if type == 'size':
-            continue
-
-        key = 'simple'
-        if type != 'column':
-            key = type
-
-        for facet in facets:
-            param = '_facet'
-            if type != 'column':
-                param += '_' + type
-
-            # TODO: see issue #31
-            # Huh, if I do _facet_array=tags, I still get simple as the inner key?
-            key = 'simple'
-            facet_params.append({ 'param': param, 'column': facet['config'][key], 'source': facet['source'] })
-
-    return '''
-__dux_facets = {};
-'''.format(json.dumps(facet_params))
+    return facets_extra_body_script(template, database, table, columns, view_name, request, datasette)
 
 @hookimpl
 def startup():
