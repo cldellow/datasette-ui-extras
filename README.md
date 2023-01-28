@@ -5,7 +5,7 @@
 [![Tests](https://github.com/cldellow/datasette-ui-extras/workflows/Test/badge.svg)](https://github.com/cldellow/datasette-ui-extras/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/cldellow/datasette-ui-extras/blob/main/LICENSE)
 
-This plugin collects UI tweaks that people have proposed for Datasette.
+This plugin collects UI tweaks that people have proposed for Datasette. You can see a demo at https://dux-demo.fly.dev/
 
 Compared to core Datasette, this plugin is more willing:
 
