@@ -42,6 +42,22 @@
     fetchFacets(__dux_facets);
   }
 
+  function urlWithReplacedArgs(href, obj) {
+    if (!href.startsWith('http:') && !href.startsWith('https:')) {
+      href = window.location.protocol + '//' + window.location.host + href;
+    }
+    const url = new URL(href);
+    for (const [k, v] of Object.entries(obj)) {
+      if (v === null)
+        url.searchParams.delete(k);
+      else {
+        url.searchParams.set(k, v);
+      }
+    }
+
+    return url.toString();
+  }
+
   function fixupToggleUrl(toggle_url, oldQueryParams) {
     if (!toggle_url.startsWith('http:') && !toggle_url.startsWith('https:')) {
       toggle_url = window.location.protocol + '//' + window.location.host + toggle_url;
@@ -134,6 +150,14 @@
       }
     }
 
+    const askedForFacetSizeMax = window.location.search.indexOf('_facet_size=max') >= 0;
+    let maybeMax = '';
+    if (facetInfo.truncated) {
+      maybeMax = `
+<li class="facet-truncated">${ !askedForFacetSizeMax ? `<a href="${urlWithReplacedArgs(window.location.href, { _facet_size: 'max' })}">…</a>` : `…`}
+                    </li>
+      `;
+    }
     node.innerHTML = `
 <p class="facet-info-name">
     <strong>${facetInfo.name}${ facetInfo.type !== 'column' ? ` (${facetInfo.type})` : ''}
@@ -142,6 +166,7 @@
     ${facetInfo.hideable ? `<a href="${facetInfo.toggle_url}" class="cross">&#x2716;</a>` : ''}
     <ul class="tight-bullets">
     ${listItems.join('\n')}
+    ${maybeMax}
     </ul>
 </p>
 `;

@@ -66,6 +66,10 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     # column and simple feel duplicative?
     # { 'column': [ {'source': 'metadata', 'config': { 'simple': 'country_long' } } ] }
     for type, facets in configs.items():
+        # Blech, _facet_size=max isn't actually a facet.
+        if type == 'size':
+            continue
+
         key = 'simple'
         if type != 'column':
             key = type
