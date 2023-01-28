@@ -19,7 +19,11 @@
 
     let facetResults = document.querySelector('.facet-results');
     if (!facetResults) {
-      // TODO: only create this if we know facets will be shown
+      if (__dux_facets.length === 0) {
+        document.body.classList.add('lazy-facets-ready');
+        return;
+      }
+
       facetResults = document.createElement('div');
       facetResults.classList.add('facet-results');
     }
@@ -34,7 +38,6 @@
 
 
     flexy.appendChild(tableWrapper);
-    //alert(__dux_facets);
 
     // We hide the body tag to avoid jank when we insert the flexbox.
     // A better approach would be to ensure the HTML structure is suitable
