@@ -16,6 +16,7 @@ def extra_css_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "lazy-facets.css"),
         datasette.urls.static_plugins(PLUGIN, "hide-filters.css"),
         datasette.urls.static_plugins(PLUGIN, "layout-row-page.css"),
+        datasette.urls.static_plugins(PLUGIN, "compact-cogs.css"),
     ]
 
 @hookimpl

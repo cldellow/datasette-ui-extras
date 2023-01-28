@@ -1,0 +1,23 @@
+body.table .rows-and-columns thead th {
+  position: relative;
+}
+
+body.table .rows-and-columns thead th a {
+  margin-right: 4px;
+}
+
+body.table thead th svg.dropdown-menu-icon {
+  position: absolute;
+  display: none;
+  top: 4px;
+  right: 4px;
+}
+
+/* make the first one visible to hint that they're there */
+body.table thead th:first-child svg.dropdown-menu-icon {
+  display: inline-block;
+}
+
+body.table .rows-and-columns thead:hover svg.dropdown-menu-icon {
+  display: inline-block;
+}
