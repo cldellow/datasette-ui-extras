@@ -9,6 +9,9 @@
     "databases": {
         "cooking": {
             "tables": {
+                "badges": {
+                    "facets": ["name"]
+                },
                 "users": {
                     "label_column": "display_name"
                 }
@@ -16,6 +19,9 @@
         },
         "superuser": {
             "tables": {
+                "badges": {
+                    "facets": ["name"]
+                },
                 "users": {
                     "label_column": "display_name"
                 }
