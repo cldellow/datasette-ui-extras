@@ -15,6 +15,7 @@
         return;
 
       box.focus();
+      box.select();
       e.preventDefault();
       return false;
     };
