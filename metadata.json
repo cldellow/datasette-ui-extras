@@ -13,6 +13,13 @@
                     "facets": ["country_long", "owner", "primary_fuel"]
                 }
             }
+        },
+        "cooking": {
+            "tables": {
+                "users": {
+                    "label_column": "display_name"
+                }
+            }
         }
     }
 }
