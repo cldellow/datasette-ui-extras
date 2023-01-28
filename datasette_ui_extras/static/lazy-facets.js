@@ -7,8 +7,10 @@
     const tableWrapper = document.querySelector('.table-wrapper');
 
     // This is unexpected, but let's gracefully fail.
-    if (!tableWrapper)
+    if (!tableWrapper) {
+      document.body.classList.add('lazy-facets-ready');
       return;
+    }
 
     const flexy = document.createElement('div');
     flexy.classList.add('facet-table-wrapper');
