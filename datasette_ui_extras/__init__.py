@@ -1,5 +1,6 @@
 import json
 from datasette import hookimpl
+from datasette.facets import load_facet_configs
 import markupsafe
 from .facets import enable_yolo_facets
 
@@ -47,13 +48,37 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     if view_name != 'table':
         return
 
+    # Infer the facets to render. This is... complicated.
+    # Look in the query string: _facet, _facet_date, _facet_array
+    # Also look in metadata: https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json
+
+
+
     # TODO: get the set of facets to render. This might come from metadata,
     #       or from something that the facet classes stashed in the request
     #       object
+    tables_metadata = datasette.metadata("tables", database=database) or {}
+    table_metadata = tables_metadata.get(table) or {}
+    configs = load_facet_configs(request, table_metadata)
+
+    facet_params = []
+
+    # column and simple feel duplicative?
+    # { 'column': [ {'source': 'metadata', 'config': { 'simple': 'country_long' } } ] }
+    for type, facets in configs.items():
+        key = 'simple'
+        if type != 'column':
+            key = type
+
+        for facet in facets:
+            param = '_facet'
+            if type != 'column':
+                param += '_' + type
+            facet_params.append({ 'param': param, 'column': facet['config'][key], 'source': facet['source'] })
 
     return '''
 __dux_facets = {};
-'''.format(json.dumps(['primary_fuel', 'country_long', 'owner']))
+'''.format(json.dumps(facet_params))
 
 @hookimpl
 def startup():

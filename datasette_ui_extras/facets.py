@@ -2,20 +2,11 @@ import time
 from datasette import facets
 from datasette.utils import path_with_added_args
 
-DateFacet_suggest = facets.DateFacet.suggest
-ColumnFacet_suggest = facets.ColumnFacet.suggest
-ArrayFacet_suggest = facets.ArrayFacet.suggest
-
-DateFacet_facet_results = facets.DateFacet.facet_results
-ColumnFacet_facet_results = facets.ColumnFacet.facet_results
-ArrayFacet_facet_results = facets.ArrayFacet.facet_results
-
 async def no_suggest(self):
     return []
 
 async def no_facet_results(self):
     return [], []
-
 
 # Disable facets in non-JSON contexts
 def json_only(underlying):
@@ -30,12 +21,45 @@ def json_only(underlying):
 
     return rv
 
+def facet_from_qs(args):
+    for key in args:
+        value = args.get(key)
+        # Seems very gross that we have to hardcode this mapping?
+        if key == '_facet':
+            return { 'simple': value }
+        elif key.startswith("_facet_"):
+            type = key[len("_facet_") :]
+            rv = {}
+            rv[type] = value
+            return rv
+
+Facet_get_configs = facets.Facet.get_configs
+def patched_get_configs(self):
+    rv = Facet_get_configs(self)
+
+    # There will be exactly 1 facet query string parameter, like
+    # _facet=xxx, _facet_date=xxx, _facet_array=xxx
+
+    print(self.request.url)
+
+    from_qs = facet_from_qs(self.request.args)
+
+    if not from_qs:
+        # This is unexpected, maybe we ought to throw?
+        return []
+
+    # If it's in metadata, it'll show up twice -- once from metadata,
+    # and once from our JS code explicitly asking for it in the qs.
+    # Just take the metadata one.
+    new_rv = [x for x in rv if x['config'] == from_qs][0:1]
+    return new_rv
+
 def enable_yolo_facets():
     # TODO: do suggestions statically at the table level
-    facets.DateFacet.suggest = no_suggest
-    facets.ColumnFacet.suggest = no_suggest
-    facets.ArrayFacet.suggest = no_suggest
 
-    facets.DateFacet.facet_results = json_only(DateFacet_facet_results)
-    facets.ColumnFacet.facet_results = json_only(ColumnFacet_facet_results)
-    facets.ArrayFacet.facet_results = json_only(ArrayFacet_facet_results)
+    facets.Facet.get_configs = patched_get_configs
+
+    targets = [facets.DateFacet, facets.ColumnFacet, facets.ArrayFacet]
+    for target in targets:
+        target.suggest = no_suggest
+        target.facet_results = json_only(target.facet_results)

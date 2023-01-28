@@ -54,7 +54,8 @@
     // CONSIDER: maybe we should batch these?
     const promises = [];
     for (const facet of facets) {
-      me.searchParams.set('_facet', facet);
+      const { param, source, column } = facet;
+      me.searchParams.set(param, column);
       const results = fetch(me.toString())
         .then((response) => response.json())
         .then((data) => data);
@@ -67,7 +68,7 @@
       const facet = facets[i];
       i++;
       const first = await promises.shift();
-      const facetInfo = first.facet_results[facet];
+      const facetInfo = first.facet_results[facet.column];
 
       if (!facetInfo) {
         // TODO: timed out? Show an error to the user.
