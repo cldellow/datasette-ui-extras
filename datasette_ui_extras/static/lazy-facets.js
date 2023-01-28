@@ -121,6 +121,7 @@
 
       if (!facetInfo) {
         // TODO: timed out? Show an error to the user.
+        renderFailedFacet(facet);
         continue;
       }
 
@@ -133,6 +134,26 @@
     }
 
     document.body.classList.add('facets-loaded');
+  }
+
+  function renderFailedFacet(facet) {
+    const facetResults = document.querySelector('.facet-results');
+
+    const node = document.createElement('div');
+    node.classList.add('facet-info');
+    node.setAttribute('data-column', facet.column);
+
+    node.innerHTML = `
+<p class="facet-info-name">
+    <strong>${facet.column}</strong>
+    <ul class="tight-bullets">
+      <li>Computing this facet timed out.</li>
+    </ul>
+</p>
+`;
+
+    facetResults.insertBefore(node, document.querySelector('.spinner-container'));
+
   }
 
   function renderFacet(facetInfo) {
