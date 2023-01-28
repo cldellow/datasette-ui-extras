@@ -1,0 +1,63 @@
+body.table {
+  display: none;
+}
+
+body.lazy-facets-ready {
+  display: block;
+}
+
+.facet-table-wrapper {
+  display: flex;
+}
+
+.facet-results {
+  position: sticky;
+  max-height: 100vh;
+  overflow: auto;
+  display: block;
+  align-self: flex-start;
+  top: 0;
+  min-width: 20em;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+
+.facet-info-name {
+  position: sticky;
+  top: 0;
+  background: white;
+}
+
+
+/* a CSS spinner, from https://stephanwagner.me/only-css-loading-spinner
+ * use: <div class='spinner-container'><div class="spinner"></div></div>
+ * */
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+
+
+.facets-loaded .spinner-container {
+  display: none;
+}
+
+.spinner-container {
+  position: relative;
+  height: 40px;
+}
+ 
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #000;
+  animation: spinner .6s linear infinite;
+}
