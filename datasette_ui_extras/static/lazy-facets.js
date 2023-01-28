@@ -4,7 +4,8 @@
     if (!document.body.classList.contains('table'))
       return;
 
-    console.log(document.querySelector('.dropdown-menu'));
+
+    renderFacetOptions();
 
     const tableWrapper = document.querySelector('.table-wrapper');
 
@@ -47,6 +48,47 @@
     // a way that breaks extensibility.
     document.body.classList.add('lazy-facets-ready');
     fetchFacets(__dux_facets);
+  }
+
+  function configureCog(index) {
+    // Remove any existing custom facet options
+    const suggestions = __dux_facet_suggestions[index];
+    const dropdownMenuUl = document.querySelector('.dropdown-menu ul');
+    const dropdownFacet = document.querySelector('.dropdown-menu li:has(.dropdown-facet)');
+
+    const toRemove = [...dropdownMenuUl.querySelectorAll('.dux-facet')];
+    for (const kill of toRemove)
+      kill.remove();
+
+    // Add any needed facet options
+    // <li><a class="dropdown-facet" href="#">Facet by this</a></li>
+    for (const suggestion of suggestions) {
+      // {"label":"this","params":{"_facet":"parent_id"}
+      const li = document.createElement('li');
+      li.classList.add('dux-facet');
+      const a = document.createElement('a');
+      a.setAttribute('href', urlWithReplacedArgs(window.location.href, suggestion.params));
+      a.textContent = 'Facet by ' + suggestion.label;
+      li.appendChild(a);
+      dropdownMenuUl.insertBefore(li, dropdownFacet);
+    }
+  }
+
+  function renderFacetOptions() {
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    const dropdownFacet = document.querySelector('.dropdown-menu .dropdown-facet');
+
+    if (!dropdownMenu || !dropdownFacet)
+      return;
+
+    const cogs = [...document.querySelectorAll('.rows-and-columns th svg')];
+    let index = 0;
+    for (const cog of cogs) {
+      const captured = index;
+      cog.addEventListener('click', () => configureCog(captured))
+
+      index += 1;
+    }
   }
 
   function urlWithReplacedArgs(href, obj) {

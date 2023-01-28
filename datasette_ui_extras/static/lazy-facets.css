@@ -6,6 +6,11 @@ body.table.lazy-facets-ready {
   display: block;
 }
 
+div.dropdown-menu li:has(.dropdown-facet) {
+  /* we're taking over the facet options */
+  display: none !important;
+}
+
 a:hover,
 a:focus,
 a:active  {
