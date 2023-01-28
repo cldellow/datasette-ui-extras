@@ -4,6 +4,8 @@
     if (!document.body.classList.contains('table'))
       return;
 
+    console.log(document.querySelector('.dropdown-menu'));
+
     const tableWrapper = document.querySelector('.table-wrapper');
 
     // This is unexpected, but let's gracefully fail.

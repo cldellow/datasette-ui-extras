@@ -73,6 +73,10 @@ def patch_TableView_data():
     ):
         rv = await original_data(self, request, default_labels, _next, _size)
 
+        if not isinstance(rv, tuple):
+            return rv
+
+        print(rv)
         rows = rv[0]['rows']
         extra_template_fn = rv[1]
 
@@ -128,13 +132,14 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, v
     num_rows = len(request._dux_rows)
 
     columns = request._dux_rows[0].columns
+    num_columns = len(columns)
 
-    nulls = [0] * num_rows
-    strs = [0] * num_rows
-    ints = [0] * num_rows
-    floats = [0] * num_rows
-    dates = [0] * num_rows
-    json_str_arrays = [0] * num_rows
+    nulls = [0] * num_columns
+    strs = [0] * num_columns
+    ints = [0] * num_columns
+    floats = [0] * num_columns
+    dates = [0] * num_columns
+    json_str_arrays = [0] * num_columns
 
     for row in request._dux_rows:
         for i, name in enumerate(row.columns):
@@ -154,7 +159,6 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, v
                 ints[i] += 1
             if isinstance(value, float):
                 floats[i] += 1
-            print('{} {}'.format(name, row[name]))
 
 
     #print('nulls: {}\nstrs: {}\nints: {}\nfloats: {}\ndates: {}\njson_str_arrays: {}\n'.format(nulls, strs, ints, floats, dates, json_str_arrays))
