@@ -20,6 +20,11 @@ a:active  {
 
 ul.tight-bullets li {
   list-style-type: initial;
+  white-space: nowrap;
+}
+
+ul.tight-bullets li a {
+  white-space: normal;
 }
 
 .facet-info-name {
