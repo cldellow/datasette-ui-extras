@@ -46,6 +46,7 @@ TBD
 - tables have a "sticky" header that remains visible as you scroll (similar to "Freeze Rows" in Google Sheets)
 - pressing `/` focuses the search box on tables that have one
 - JSON arrays of strings are displayed as a comma-separated list
+- the row page defaults to a vertical view, not a tabular view
 
 ## Development
 

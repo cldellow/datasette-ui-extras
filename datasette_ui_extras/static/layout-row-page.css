@@ -1,0 +1,64 @@
+/* Make the row page render the row vertically by assuming the CSS
+ * for narrow screens.
+ */
+@media only screen {
+    body.row .small-screen-only {
+        display: initial;
+    }
+    body.row .select-wrapper.small-screen-only {
+        display: inline-block;
+    }
+
+    body.row form.sql textarea {
+        width: 95%;
+    }
+    /* Force table to not be like tables anymore */
+    body.row table.rows-and-columns,
+    body.row .rows-and-columns thead,
+    body.row .rows-and-columns tbody,
+    body.row .rows-and-columns th,
+    body.row .rows-and-columns td,
+    body.row .rows-and-columns tr {
+        display: block;
+    }
+
+    /* Hide table headers (but not display: none;, for accessibility) */
+    body.row .rows-and-columns thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    body.row .rows-and-columns tr {
+        border: 1px solid #ccc;
+        margin-bottom: 1em;
+        border-radius: 10px;
+        background-color: white;
+        padding: 0.2rem;
+    }
+
+    body.row .rows-and-columns td {
+        /* Behave  like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        padding: 0;
+        padding-left: 10%;
+    }
+
+    body.row .rows-and-columns td:before {
+        display: block;
+        color: black;
+        margin-left: -10%;
+        font-size: 0.8em;
+    }
+
+    body.row .select-wrapper {
+        width: 100px;
+    }
+    body.row .select-wrapper.filter-op {
+        width: 60px;
+    }
+    body.row .filters input.filter-value {
+        width: 140px;
+    }
+}

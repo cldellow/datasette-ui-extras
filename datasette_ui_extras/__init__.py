@@ -15,6 +15,7 @@ def extra_css_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "sticky-table-headers.css"),
         datasette.urls.static_plugins(PLUGIN, "lazy-facets.css"),
         datasette.urls.static_plugins(PLUGIN, "hide-filters.css"),
+        datasette.urls.static_plugins(PLUGIN, "layout-row-page.css"),
     ]
 
 @hookimpl
@@ -24,6 +25,7 @@ def extra_js_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "sticky-table-headers.js"),
         datasette.urls.static_plugins(PLUGIN, "focus-search-box.js"),
         datasette.urls.static_plugins(PLUGIN, 'lazy-facets.js'),
+        datasette.urls.static_plugins(PLUGIN, 'layout-row-page.js'),
     ]
 
 @hookimpl
