@@ -54,12 +54,52 @@ def patched_get_configs(self):
     new_rv = [x for x in rv if x['config'] == from_qs][0:1]
     return new_rv
 
-def enable_yolo_facets():
-    # TODO: do suggestions statically at the table level
 
+def patch_TableView_data():
+    from datasette.views.table import TableView
+
+    original_data = TableView.data
+    async def patched_data(
+        self,
+        request,
+        default_labels=False,
+        _next=None,
+        _size=None,
+    ):
+        rv = await original_data(self, request, default_labels, _next, _size)
+
+        rows = rv[0]['rows']
+        extra_template_fn = rv[1]
+
+        extra_template = await extra_template_fn()
+        request = extra_template['request']
+
+        async def cached_extra_template():
+            return extra_template
+
+        request._dux_rows = rows
+
+        # Replace the extra_template fn call with one that uses the value
+        # we just computed
+        rv = (rv[0], cached_extra_template, rv[2])
+        return rv
+    TableView.data = patched_data
+
+def enable_yolo_facets():
+    # Monkey patch a bunch of things to enable an alternative facet experience.
+
+    # Only compute facets for requests with _dux_facet and _dux_facet_column
     facets.Facet.get_configs = patched_get_configs
 
     targets = [facets.DateFacet, facets.ColumnFacet, facets.ArrayFacet]
     for target in targets:
+        # Suppress facet suggestion
         target.suggest = no_suggest
+
+        # Only compute facet results on JSON API calls
         target.facet_results = json_only(target.facet_results)
+
+    # We'd like to smuggle info about the current page's rows to our extra_body_script
+    # handler.
+    patch_TableView_data()
+
