@@ -10,7 +10,6 @@ PLUGIN = 'datasette-ui-extras'
 def extra_css_urls(datasette):
     return [
         datasette.urls.static_plugins(PLUGIN, "hide-table-definition.css"),
-        datasette.urls.static_plugins(PLUGIN, "facet-treatment.css"),
         datasette.urls.static_plugins(PLUGIN, "sticky-table-headers.css"),
         datasette.urls.static_plugins(PLUGIN, "lazy-facets.css"),
     ]

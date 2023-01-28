@@ -2,6 +2,12 @@
   border-collapse: separate;
 }
 
+.rows-and-columns thead {
+  background-color: white;
+  position: sticky;
+  top: 0;
+}
+
 .rows-and-columns thead th {
   border-bottom: 1px solid #aaa;
 }
