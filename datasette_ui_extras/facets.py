@@ -1,6 +1,7 @@
 import time
 from datasette import facets
 from datasette.utils import path_with_added_args
+from .facet_patches import ArrayFacet_facet_results
 
 async def no_suggest(self):
     return []
