@@ -27,3 +27,37 @@ body.lazy-facets-ready {
   top: 0;
   background: white;
 }
+
+
+/* a CSS spinner, from https://stephanwagner.me/only-css-loading-spinner
+ * use: <div class='spinner-container'><div class="spinner"></div></div>
+ * */
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+
+
+.facets-loaded .spinner-container {
+  display: none;
+}
+
+.spinner-container {
+  position: relative;
+  height: 40px;
+}
+ 
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #000;
+  animation: spinner .6s linear infinite;
+}

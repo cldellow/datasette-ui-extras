@@ -23,6 +23,14 @@
     }
 
     flexy.insertBefore(facetResults, null);
+    const spinnerContainer = document.createElement('div');
+    spinnerContainer.classList.add('spinner-container');
+    const spinner = document.createElement('div');
+    spinner.classList.add('spinner');
+    spinnerContainer.appendChild(spinner);
+    facetResults.appendChild(spinnerContainer);
+
+
     flexy.appendChild(tableWrapper);
     //alert(__dux_facets);
 
@@ -31,7 +39,6 @@
     // at render-time, but that might require fiddling with templates in
     // a way that breaks extensibility.
     document.body.classList.add('lazy-facets-ready');
-
     fetchFacets(__dux_facets);
   }
 
@@ -69,6 +76,8 @@
 
       renderFacet(facetInfo);
     }
+
+    document.body.classList.add('facets-loaded');
   }
 
   function renderFacet(facetInfo) {
@@ -105,8 +114,7 @@
 </p>
 `;
 
-
-    facetResults.appendChild(node);
+    facetResults.insertBefore(node, document.querySelector('.spinner-container'));
   }
 
   addEventListener('DOMContentLoaded', initialize);
