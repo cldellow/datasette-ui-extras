@@ -53,6 +53,8 @@ chrome.
 - When viewing a single entry's page, we render the data as a vertical
   column, with one attribute per row.
 
+- Mobile column options: Click the column name to see the column options, for sorting and faceting.
+
 - JSON arrays of strings are displayed as a comma-separated list.
 
 - JSON arrays of strings are 3x faster to filter and 4x faster to facet.

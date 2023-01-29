@@ -1,0 +1,50 @@
+/* see https://stackoverflow.com/questions/7478336/only-detect-click-event-on-pseudo-element/32993828#32993828
+
+Disable pointer events on the td tag, so that we know any click on the td must be on its
+label.
+
+Note: you must re-enable pointer events on any children in order to get things like
+A tags to work.
+ */
+
+body.table .dropdown-scrim {
+  display: none;
+  z-index 1;
+}
+
+@media only screen and (max-width: 576px) {
+  body.table .rows-and-columns td {
+    pointer-events:none;
+  }
+
+  body.table .rows-and-columns td:before {
+    pointer-events:auto;
+  }
+
+  body.table .rows-and-columns td > *{
+    pointer-events:auto;
+  }
+
+  body.table.show-column-menu .dropdown-scrim {
+    position: fixed;
+    display: block;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #000;
+    opacity: 0.3;
+  }
+
+  body.table.show-column-menu .dropdown-menu {
+    display: block !important;
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+  }
+
+  body.table .dropdown-menu .hook {
+    display: none;
+  }
+}
