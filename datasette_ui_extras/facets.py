@@ -130,8 +130,6 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, c
 
     num_rows = len(request._dux_rows)
 
-    print(num_rows)
-    print(request._dux_rows)
     num_columns = len(columns)
 
     nulls = [0] * num_columns
