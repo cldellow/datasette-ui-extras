@@ -49,7 +49,10 @@ chrome.
 - The human description for '=' and '!=' against a column that is a
   foreign key includes the label of the foreign row.
 
-- New facet types: facet by year (`2022`) or year/month (`2022-10`)
+- New facet types:
+    - facet by year (`2022`)
+    - facet by year/month (`2022-10`)
+    - statistical summary (min, median, p90, p95, p99, max)
 
 - Pressing `/` focuses the search box.
 
