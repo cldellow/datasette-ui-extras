@@ -49,6 +49,8 @@ chrome.
 - We no longer suggest facets. Instead, use the cog menu on the column
   to add facets.
 
+- New facet types: facet by year (`2022`) or year/month (`2022-10`)
+
 - Pressing `/` focuses the search box.
 
 - When viewing a single entry's page, we render the data as a vertical
