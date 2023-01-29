@@ -46,6 +46,9 @@ chrome.
 - Facets are rendered in a sidebar, lazy loaded after your core
   table has been shown.
 
+- The human description for '=' and '!=' against a column that is a
+  foreign key includes the label of the foreign row.
+
 - New facet types: facet by year (`2022`) or year/month (`2022-10`)
 
 - Pressing `/` focuses the search box.
