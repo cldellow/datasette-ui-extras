@@ -2,6 +2,7 @@ import json
 from datasette import hookimpl
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
+from .new_facets import YearFacet, YearMonthFacet
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -63,3 +64,7 @@ def extra_body_script(template, database, table, columns, view_name, request, da
 @hookimpl
 def startup():
     enable_yolo_facets()
+
+@hookimpl
+def register_facet_classes():
+    return [YearFacet, YearMonthFacet]

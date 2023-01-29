@@ -99,7 +99,11 @@ def enable_yolo_facets():
     # Only compute facets for requests with _dux_facet and _dux_facet_column
     facets.Facet.get_configs = patched_get_configs
 
-    targets = [facets.DateFacet, facets.ColumnFacet, facets.ArrayFacet]
+    # TODO: is there a clean way we can patch these on demand?
+    # Can we just enumerate pm.hook.register_facet_classes?
+    from datasette.plugins import pm
+    targets = [y for x in pm.hook.register_facet_classes() for y in x]
+
     for target in targets:
         # Suppress facet suggestion
         target.suggest = no_suggest
@@ -174,6 +178,8 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, c
 
         if dates[i] > 0:
             rv.append({ 'label': 'this (date)', 'params': { '_facet_date': column }})
+            rv.append({ 'label': 'this (year)', 'params': { '_facet_year': column }})
+            rv.append({ 'label': 'this (month)', 'params': { '_facet_year_month': column }})
 
         suggestions.append(rv)
 
