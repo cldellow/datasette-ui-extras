@@ -67,7 +67,11 @@
       const li = document.createElement('li');
       li.classList.add('dux-facet');
       const a = document.createElement('a');
-      a.setAttribute('href', urlWithReplacedArgs(window.location.href, suggestion.params));
+      const url = new URL(window.location.href);
+      for (const [k, v] of Object.entries(suggestion.params)) {
+        url.searchParams.append(k, v);
+      }
+      a.setAttribute('href', url.toString());
       a.textContent = 'Facet by ' + suggestion.label;
       li.appendChild(a);
       dropdownMenuUl.insertBefore(li, dropdownFacet);
