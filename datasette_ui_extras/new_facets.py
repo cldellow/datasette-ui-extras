@@ -1,3 +1,4 @@
+from datasette.database import QueryInterrupted
 from datasette.facets import Facet
 from datasette.utils import (
     escape_sqlite,
