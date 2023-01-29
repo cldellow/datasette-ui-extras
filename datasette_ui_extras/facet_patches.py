@@ -22,23 +22,17 @@ async def ArrayFacet_facet_results(self):
         # https://github.com/simonw/datasette/issues/448
         facet_sql = """
             with inner as ({sql}),
-            deduped_array_items as (
-                select
-                    distinct j.value,
-                    inner.{col}
-                from
-                    json_each([inner].{col}) j
-                    join inner
-            )
+            with_ids as (select row_number() over () as row_number, {col} as array from inner),
+            array_items as (select row_number, each.value from json_each(with_ids.array) each, with_ids)
             select
                 value as value,
-                count(*) as count
+                count(distinct row_number) as count
             from
-                deduped_array_items
+                array_items
             group by
                 value
             order by
-                count(*) desc, value limit {limit}
+                count(distinct row_number) desc, value limit {limit}
         """.format(
             col=escape_sqlite(column), sql=self.sql, limit=facet_size + 1
         )
@@ -93,5 +87,6 @@ async def ArrayFacet_facet_results(self):
             facets_timed_out.append(column)
 
     return facet_results, facets_timed_out
+
 
 facets.ArrayFacet.facet_results = ArrayFacet_facet_results
