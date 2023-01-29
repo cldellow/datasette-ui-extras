@@ -3,7 +3,7 @@ from datasette import hookimpl
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
-from .new_facets import YearFacet, YearMonthFacet
+from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -72,7 +72,7 @@ def startup():
 
 @hookimpl
 def register_facet_classes():
-    return [YearFacet, YearMonthFacet]
+    return [StatsFacet, YearFacet, YearMonthFacet]
 
 @hookimpl
 def filters_from_request(request, database, table, datasette):

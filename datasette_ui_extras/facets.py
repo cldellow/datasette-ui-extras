@@ -173,6 +173,9 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, c
         # Every column can be faceted by ColumnFacet
         rv.append({ 'label': 'this', 'params': { '_facet': column }})
 
+        if ints[i] > 0 or floats[i] > 0:
+            rv.append({ 'label': 'this (stats)', 'params': { '_facet_stats': column }})
+
         if json_str_arrays[i] > 0:
             rv.append({ 'label': 'this (array)', 'params': { '_facet_array': column }})
 
