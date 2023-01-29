@@ -5,27 +5,16 @@
 [![Tests](https://github.com/cldellow/datasette-ui-extras/workflows/Test/badge.svg)](https://github.com/cldellow/datasette-ui-extras/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/cldellow/datasette-ui-extras/blob/main/LICENSE)
 
-This plugin collects UI tweaks that people have proposed for Datasette. You can see a demo at https://dux-demo.fly.dev/
+The vision of this plugin is to be a batteries-included theme that you can apply to make Datasette work more like a self-hosted Airtable or Notion.
 
-Compared to core Datasette, this plugin is more willing:
+You can share read-only access, while still allowing authenticated users to edit data.
 
-- to use features that require more modern browsers
-- to add features that require storing state (e.g., a visitor's
-  preferences about how to view a table)
-- to require JavaScript
-- to release UI changes
-- to release features that only work on smaller datasets
-  - 100 tables, with 1M rows? Sure.
-  - 100,000 tables, with 1B rows? No.
+You can see a demo at https://dux-demo.fly.dev/
 
-I think these are generally reasonable tradeoffs -- as a plugin that users opt-in
-to, we have the luxury of being more aggressive in our minimum requirements
-and release cadence.
-
-If Datasette makes a breaking change, the plugin may stop working. In that case,
-you can uninstall the plugin while waiting for a fix.
-
-OK, that's enough disclaimers.
+This plugin _tries_ to use Datasette hooks where possible. Some of the features
+I add aren't natively extensible. In those cases, I do some shenanigans. I try to
+exercise good judgment so that we can fail gracefully if Datasette makes a breaking
+change.
 
 ## Installation
 
@@ -35,18 +24,37 @@ Install this plugin in the same environment as Datasette.
 
 ## Usage
 
-TBD
+The current version of the plug-in only adds read-only features.
+
+A future version will have configuration knobs to permit read-write
+of existing tables.
 
 ## Features
 
-- facets are dramatically different
-    - shown as a sidebar on the left
-    - loaded via ajax to ensure fast pageloads
-    - facet suggestions are not a thing any longer; facet by the column menu
-- tables have a "sticky" header that remains visible as you scroll (similar to "Freeze Rows" in Google Sheets)
-- pressing `/` focuses the search box on tables that have one
-- JSON arrays of strings are displayed as a comma-separated list
-- the row page defaults to a vertical view, not a tabular view
+### Writing
+
+In progress.
+
+### Reading / browsing
+
+The plugin tries to emphasize your data, and de-emphasize any other
+chrome.
+
+- Tables have sticky headers so you can keep track of columns while
+  scrolling big data sets.
+
+- Facets are rendered in a sidebar, lazy loaded after your core
+  table has been shown.
+
+- We no longer suggest facets. Instead, use the cog menu on the column
+  to add facets.
+
+- Pressing `/` focuses the search box.
+
+- When viewing a single entry's page, we render the data as a vertical
+  column, with one attribute per row.
+
+- JSON arrays of strings are displayed as a comma-separated list.
 
 ## Development
 
