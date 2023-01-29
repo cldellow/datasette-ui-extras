@@ -6,6 +6,17 @@ body.table.dux-show-filters .filter-row {
   display: block;
 }
 
+body.table .filter-solid {
+  display: none;
+}
+
+body.table.dux-show-filters .filter-outline {
+  display: none;
+}
+
+body.table.dux-show-filters .filter-solid {
+  display: block;
+}
 
 body.table form.filters + p:has(a[title^="select"]) {
   display: none;
