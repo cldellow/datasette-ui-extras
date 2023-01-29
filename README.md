@@ -5,13 +5,13 @@
 [![Tests](https://github.com/cldellow/datasette-ui-extras/workflows/Test/badge.svg)](https://github.com/cldellow/datasette-ui-extras/actions?query=workflow%3ATest)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/cldellow/datasette-ui-extras/blob/main/LICENSE)
 
-The vision of this plugin is to be a batteries-included theme that you can apply to make Datasette work more like a self-hosted Airtable or Notion.
+This plugin aims to be a batteries-included theme that makes Datasette more like a self-hosted Airtable or Notion.
 
 You can share read-only access, while still allowing authenticated users to edit data.
 
 You can see a demo at https://dux-demo.fly.dev/
 
-This plugin _tries_ to use Datasette hooks where possible. Some of the features
+The plugin _tries_ to use stable Datasette hooks where possible. Some of the features
 I add aren't natively extensible. In those cases, I do some shenanigans. I try to
 exercise good judgment so that we can fail gracefully if Datasette makes a breaking
 change.
