@@ -46,9 +46,6 @@ chrome.
 - Facets are rendered in a sidebar, lazy loaded after your core
   table has been shown.
 
-- We no longer suggest facets. Instead, use the cog menu on the column
-  to add facets.
-
 - New facet types: facet by year (`2022`) or year/month (`2022-10`)
 
 - Pressing `/` focuses the search box.
@@ -57,6 +54,16 @@ chrome.
   column, with one attribute per row.
 
 - JSON arrays of strings are displayed as a comma-separated list.
+
+- Advanced export: This control is hidden by default. Click the `(Advanced)` link to see it.
+
+- Filters: These controls are hidden by default. Click the funnel icon to see them.
+
+- Suggested facets: We no longer suggest facets. Instead, use the cog menu
+  on the column to add facets.
+
+- Table/view definitions: These are hidden.
+
 
 ## Development
 
