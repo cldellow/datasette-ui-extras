@@ -215,6 +215,7 @@ def get_extra_body_script_for_dux_facets(template, database, table, columns, vie
 
             # TODO: see issue #31
             # Huh, if I do _facet_array=tags, I still get simple as the inner key?
+            # ... maybe this worked in vanilla Datasette because we compute all the facets,
             key = 'simple'
             facet_params.append({ 'param': param, 'column': facet['config'][key], 'source': facet['source'] })
 

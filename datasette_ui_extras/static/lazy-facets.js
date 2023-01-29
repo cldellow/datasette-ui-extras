@@ -164,11 +164,25 @@
       const facet = facets[i];
       i++;
       const first = await promises.shift();
-      const facetInfo = first.facet_results[facet.column];
 
+      // In theory, we can do:
+      // const facetInfo = first.facet_results[facet.column];
+      //
+      // In practice, I think there's a limitation when the user facets the same
+      // columns multiple ways. We always compute the full set for that column,
+      // resulting in facet_results having key names like column_name,
+      // column_name_2.
+      //
+      // We have to go digging in the entry to know that it was the result for us.
+      let type = facet.param;
+      type = type.replace(/^_facet_/, '');
+      if (type === '_facet')
+        type = 'column';
+      const facetInfo = Object.values(first.facet_results).find(x => x.type === type);
 
       if (!facetInfo) {
-        // TODO: timed out? Show an error to the user.
+        // Timed out? Show an error to the user.
+        // TODO: This might also be an error generally?
         renderFailedFacet(facet);
         continue;
       }
