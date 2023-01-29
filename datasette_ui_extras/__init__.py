@@ -2,7 +2,7 @@ import json
 from datasette import hookimpl
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
-from .filters import enable_yolo_arraycontains
+from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import YearFacet, YearMonthFacet
 
 PLUGIN = 'datasette-ui-extras'
@@ -67,8 +67,17 @@ def extra_body_script(template, database, table, columns, view_name, request, da
 @hookimpl
 def startup():
     enable_yolo_facets()
-    enable_yolo_arraycontains()
+    enable_yolo_arraycontains_filter()
+    enable_yolo_exact_filter()
 
 @hookimpl
 def register_facet_classes():
     return [YearFacet, YearMonthFacet]
+
+@hookimpl
+def filters_from_request(request, database, table, datasette):
+    async def dothething():
+        return await yolo_filters_from_request(request, database, table, datasette)
+
+    return dothething
+
