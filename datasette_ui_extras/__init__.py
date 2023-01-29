@@ -41,7 +41,6 @@ def extra_js_urls(datasette):
 
 @hookimpl
 def render_cell(value):
-    print('render_cell')
     if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
         try:
             tags = json.loads(value)
