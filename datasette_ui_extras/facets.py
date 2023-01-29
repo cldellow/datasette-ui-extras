@@ -76,7 +76,6 @@ def patch_TableView_data():
         if not isinstance(rv, tuple):
             return rv
 
-        print(rv)
         rows = rv[0]['rows']
         extra_template_fn = rv[1]
 
@@ -118,20 +117,21 @@ def facets_extra_body_script(template, database, table, columns, view_name, requ
 
     scripts = []
 
-    scripts.append(get_extra_body_script_for_dux_facets(template, database, table, view_name, request, datasette))
+    scripts.append(get_extra_body_script_for_dux_facets(template, database, table, columns, view_name, request, datasette))
 
-    scripts.append(get_extra_body_script_for_dux_facet_suggestions(template, database, table, view_name, request, datasette))
+    scripts.append(get_extra_body_script_for_dux_facet_suggestions(template, database, table, columns, view_name, request, datasette))
     return '''
 {}
 '''.format('\n'.join([script for script in scripts if script]))
 
-def get_extra_body_script_for_dux_facet_suggestions(template, database, table, view_name, request, datasette):
+def get_extra_body_script_for_dux_facet_suggestions(template, database, table, columns, view_name, request, datasette):
     if not request._dux_rows:
         return ''
 
     num_rows = len(request._dux_rows)
 
-    columns = request._dux_rows[0].columns
+    print(num_rows)
+    print(request._dux_rows)
     num_columns = len(columns)
 
     nulls = [0] * num_columns
@@ -142,7 +142,7 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, v
     json_str_arrays = [0] * num_columns
 
     for row in request._dux_rows:
-        for i, name in enumerate(row.columns):
+        for i, name in enumerate(columns):
             value = row[name]
 
             if value == None:
@@ -183,7 +183,7 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, v
 __dux_facet_suggestions = {};
 '''.format(json.dumps(suggestions))
 
-def get_extra_body_script_for_dux_facets(template, database, table, view_name, request, datasette):
+def get_extra_body_script_for_dux_facets(template, database, table, columns, view_name, request, datasette):
     # Infer the facets to render. This is... complicated.
     # Look in the query string: _facet, _facet_date, _facet_array
     # Also look in metadata: https://docs.datasette.io/en/stable/facets.html#facets-in-metadata-json
