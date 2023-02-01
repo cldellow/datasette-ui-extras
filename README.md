@@ -9,7 +9,7 @@ This plugin aims to be a batteries-included theme that makes Datasette more like
 
 You can share read-only access, while still allowing authenticated users to edit data.
 
-You can see a demo at https://dux-demo.fly.dev/
+You can see a demo at https://dux.fly.dev/
 
 The plugin _tries_ to use stable Datasette hooks where possible. Some of the features
 I add aren't natively extensible. In those cases, I do some shenanigans. I try to
