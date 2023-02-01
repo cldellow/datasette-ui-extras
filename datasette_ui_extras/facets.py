@@ -145,7 +145,7 @@ def get_extra_body_script_for_dux_facet_suggestions(template, database, table, c
 
     for row in request._dux_rows:
         for i, name in enumerate(columns):
-            value = row[name]
+            value = row[i]
 
             if value == None:
                 nulls[i] += 1
