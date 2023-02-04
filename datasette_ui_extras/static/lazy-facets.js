@@ -179,7 +179,7 @@
       if (type === '_facet')
         type = 'column';
 
-      if (!first.ok) {
+      if (first.ok === false) {
         renderFailedFacet(facet, first.error);
         continue;
       }
