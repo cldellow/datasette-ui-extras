@@ -31,6 +31,9 @@ def facet_from_qs(args):
     key = args.get('_dux_facet')
     value = args.get('_dux_facet_column')
 
+    if not key and not value:
+        return
+
     if key == '_facet':
         return { 'simple': value }
     elif key.startswith("_facet_"):
