@@ -236,9 +236,26 @@
     node.classList.add('facet-info');
     node.setAttribute('data-column', facet.column);
 
+    let toggleUrl = '';
+
+    // You can remove the facet if its params were in the URL
+    const url = new URL(window.location.href);
+
+    const params = [...url.searchParams.entries()].filter(x => !(x[0] === facet.param && x[1] === facet.column));
+    if (params.length != [...url.searchParams.entries()].length) {
+      for (const k of url.searchParams.keys())
+        url.searchParams.delete(k);
+      for (const [k, v] of params) {
+        url.searchParams.append(k, v);
+      }
+
+      toggleUrl = url.toString();
+    }
+
     node.innerHTML = `
 <p class="facet-info-name">
     <strong>${facet.column}</strong>
+    ${toggleUrl ? `<a href="${toggleUrl}" class="cross">&#x2716;</a>` : ''}
     <ul class="tight-bullets">
       <li class="facet-error">${error}</li>
     </ul>
