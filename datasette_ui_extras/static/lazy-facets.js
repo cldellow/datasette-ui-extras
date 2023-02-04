@@ -15,6 +15,9 @@
       return;
     }
 
+    const tableWrapperWrapper = document.createElement('div');
+    tableWrapperWrapper.classList.add('table-wrapper-wrapper');
+
     const flexy = document.createElement('div');
     flexy.classList.add('facet-table-wrapper');
     const parent = tableWrapper.parentElement;
@@ -39,8 +42,9 @@
     spinnerContainer.appendChild(spinner);
     facetResults.appendChild(spinnerContainer);
 
+    flexy.appendChild(tableWrapperWrapper);
 
-    flexy.appendChild(tableWrapper);
+    tableWrapperWrapper.appendChild(tableWrapper);
 
     // We hide the body tag to avoid jank when we insert the flexbox.
     // A better approach would be to ensure the HTML structure is suitable

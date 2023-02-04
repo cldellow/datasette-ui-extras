@@ -28,7 +28,7 @@ def extra_css_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "mobile-column-menu.css"),
     ]
 
-@hookimpl
+@hookimpl(tryfirst=True)
 def extra_js_urls(datasette):
     return [
         datasette.urls.static_plugins(PLUGIN, 'hide-filters.js'),
