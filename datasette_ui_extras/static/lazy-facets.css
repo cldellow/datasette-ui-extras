@@ -28,6 +28,10 @@ ul.tight-bullets li {
   white-space: nowrap;
 }
 
+ul.tight-bullets li.facet-error {
+  white-space: initial;
+}
+
 ul.tight-bullets li a {
   white-space: normal;
 }

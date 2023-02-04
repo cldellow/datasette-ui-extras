@@ -178,12 +178,16 @@
       type = type.replace(/^_facet_/, '');
       if (type === '_facet')
         type = 'column';
+
+      if (!first.ok) {
+        renderFailedFacet(facet, first.error);
+        continue;
+      }
       const facetInfo = Object.values(first.facet_results).find(x => x.type === type);
 
       if (!facetInfo) {
         // Timed out? Show an error to the user.
-        // TODO: This might also be an error generally?
-        renderFailedFacet(facet);
+        renderFailedFacet(facet, "Computing this facet timed out.");
         continue;
       }
 
@@ -224,7 +228,8 @@
       facetResult.appendChild(datalist);
     });
   }
-  function renderFailedFacet(facet) {
+
+  function renderFailedFacet(facet, error) {
     const facetResults = document.querySelector('.facet-results');
 
     const node = document.createElement('div');
@@ -235,7 +240,7 @@
 <p class="facet-info-name">
     <strong>${facet.column}</strong>
     <ul class="tight-bullets">
-      <li>Computing this facet timed out.</li>
+      <li class="facet-error">${error}</li>
     </ul>
 </p>
 `;
