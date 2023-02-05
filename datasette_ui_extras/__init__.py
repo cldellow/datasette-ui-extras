@@ -1,10 +1,12 @@
 import json
 from datasette import hookimpl
+from jinja2 import BaseLoader, FunctionLoader, TemplateNotFound
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
+from .edit_row_pages import enable_yolo_edit_row_pages
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -38,6 +40,7 @@ def extra_js_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, 'lazy-facets.js'),
         datasette.urls.static_plugins(PLUGIN, 'layout-row-page.js'),
         datasette.urls.static_plugins(PLUGIN, "mobile-column-menu.js"),
+        datasette.urls.static_plugins(PLUGIN, "edit-row.js"),
     ]
 
 @hookimpl
@@ -71,6 +74,7 @@ def startup():
     enable_yolo_arraycontains_filter()
     enable_yolo_exact_filter()
     enable_yolo_view_row_pages()
+    enable_yolo_edit_row_pages()
 
 @hookimpl
 def register_facet_classes():

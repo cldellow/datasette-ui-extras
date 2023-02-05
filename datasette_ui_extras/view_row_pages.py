@@ -168,6 +168,7 @@ def thunk_update(
     uv = UpdateableView(self)
     return uv.update(pk_values, updates, alter=False, conversions=None)
 
+
 def enable_yolo_view_row_pages():
     Database.primary_keys = patched_primary_keys
     Database.get_all_foreign_keys = patched_get_all_foreign_keys

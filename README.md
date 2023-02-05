@@ -35,6 +35,8 @@ of existing tables.
 
 In progress.
 
+- Adds an `edit-row.html` template which is used on row pages when `_dux_edit=1` is present.
+
 ### Reading / browsing
 
 The plugin tries to emphasize your data, and de-emphasize any other
