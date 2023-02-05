@@ -65,6 +65,10 @@ chrome.
 
 - JSON arrays of strings are 3x faster to filter and 4x faster to facet.
 
+- Enables the row page for views on base tables that have primary keys.
+
+- Enable the update operation of the JSON API for views on base tables that have primary keys.
+
 - Advanced export: This control is hidden by default. Click the `(Advanced)` link to see it.
 
 - Filters: These controls are hidden by default. Click the funnel icon to see them.

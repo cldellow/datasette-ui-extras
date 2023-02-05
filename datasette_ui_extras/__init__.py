@@ -4,6 +4,7 @@ import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
+from .view_row_pages import enable_yolo_view_row_pages
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -69,6 +70,7 @@ def startup():
     enable_yolo_facets()
     enable_yolo_arraycontains_filter()
     enable_yolo_exact_filter()
+    enable_yolo_view_row_pages()
 
 @hookimpl
 def register_facet_classes():
