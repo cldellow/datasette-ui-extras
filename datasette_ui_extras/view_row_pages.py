@@ -107,15 +107,7 @@ class UpdateableView(View):
         )
         #print('running update: sql={} args={}'.format(sql, args))
         with self.db.conn:
-            try:
-                rowcount = self.db.execute(sql, args).rowcount
-            except OperationalError as e:
-                if alter and (" column" in e.args[0]):
-                    # Attempt to add any missing columns, then try again
-                    self.add_missing_columns([updates])
-                    rowcount = self.db.execute(sql, args).rowcount
-                else:
-                    raise
+            rowcount = self.db.execute(sql, args).rowcount
 
             # NOTE: Don't check rowcount, updates on updatable views don't have a rowcount.
             # assert rowcount == 1
