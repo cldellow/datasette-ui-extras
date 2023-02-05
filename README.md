@@ -67,7 +67,6 @@ chrome.
 
 - Views: better support for views of the shape `SELECT ... FROM base_table`
     - Can navigate to row page, e.g. https://dux.fly.dev/cooking/questions/1
-    - JSON API can update these rows, assuming they have an [INSTEAD OF trigger](https://www.sqlite.org/lang_createtrigger.html#instead_of_trigger)
 
 - Advanced export: This control is hidden by default. Click the `(Advanced)` link to see it.
 
@@ -78,6 +77,10 @@ chrome.
 
 - Table/view definitions: These are hidden.
 
+### API
+
+- Views: better support for views of the shape `SELECT ... FROM base_table`
+    - JSON API can update these rows, assuming they have an [INSTEAD OF trigger](https://www.sqlite.org/lang_createtrigger.html#instead_of_trigger)
 
 ## Development
 
