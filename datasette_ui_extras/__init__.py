@@ -1,7 +1,8 @@
 import json
-from datasette import hookimpl
+import datasette
 import asyncio
 import markupsafe
+from .plugin import pm
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
@@ -18,7 +19,7 @@ PLUGIN = 'datasette-ui-extras'
 # easily turned on/off, or upstreamed into Datasette.
 #
 # TODO: serve a minified/concatenated CSS/JS file
-@hookimpl
+@datasette.hookimpl
 def extra_css_urls(datasette):
     return [
         datasette.urls.static_plugins(PLUGIN, "app.css"),
@@ -32,7 +33,7 @@ def extra_css_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "mobile-column-menu.css"),
     ]
 
-@hookimpl(tryfirst=True)
+@datasette.hookimpl(tryfirst=True)
 def extra_js_urls(datasette):
     return [
         datasette.urls.static_plugins(PLUGIN, 'hide-filters.js'),
@@ -44,7 +45,7 @@ def extra_js_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "edit-row.js"),
     ]
 
-@hookimpl
+@datasette.hookimpl
 def render_cell(datasette, database, table, column, value):
     async def inner():
         task = asyncio.current_task()
@@ -52,7 +53,18 @@ def render_cell(datasette, database, table, column, value):
 
         params = await row_edit_params(datasette, request, database, table)
         if params and column in params:
-            print('maybe render edit control for {}.{}.{}'.format(database, table, column))
+            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column)
+
+            if control:
+                return markupsafe.Markup(
+                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}">Loading...</div>'.format(
+                        control=markupsafe.escape(control),
+                        database=markupsafe.escape(database),
+                        table=markupsafe.escape(table),
+                        column=markupsafe.escape(column),
+                        value=markupsafe.escape(json.dumps(value)),
+                    )
+                )
 
         if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
             try:
@@ -74,11 +86,11 @@ def render_cell(datasette, database, table, column, value):
         return None
     return inner
 
-@hookimpl
+@datasette.hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
     return facets_extra_body_script(template, database, table, columns, view_name, request, datasette)
 
-@hookimpl
+@datasette.hookimpl
 def startup():
     enable_yolo_facets()
     enable_yolo_arraycontains_filter()
@@ -86,11 +98,11 @@ def startup():
     enable_yolo_view_row_pages()
     enable_yolo_edit_row_pages()
 
-@hookimpl
+@datasette.hookimpl
 def register_facet_classes():
     return [StatsFacet, YearFacet, YearMonthFacet]
 
-@hookimpl
+@datasette.hookimpl
 def filters_from_request(request, database, table, datasette):
     async def dothething():
         return await yolo_filters_from_request(request, database, table, datasette)
@@ -98,7 +110,7 @@ def filters_from_request(request, database, table, datasette):
     return dothething
 
 
-@hookimpl(specname='actor_from_request', hookwrapper=True)
+@datasette.hookimpl(specname='actor_from_request', hookwrapper=True)
 def sniff_actor_from_request(datasette, request):
     # TODO: This is temporary, we'll remove it when render_cell gets the request
     # param. The code is committed, just needs a new release of Datasette.

@@ -1,24 +1,47 @@
+window.StringControl = class StringControl {
+  constructor(db, table, column, initialValue) {
+    this.initialValue = initialValue;
+    this.el = null;
+  }
+
+  // Return a DOM element that will be shown to the user to edit this column's value
+  createControl() {
+    this.el = document.createElement('input');
+    this.el.value = this.initialValue;
+    return this.el;
+  }
+
+  get value() {
+    return this.el.value;
+  }
+};
+
+
 (function() {
+  const controls = {};
+
   function onFormSubmit(e) {
     e.preventDefault();
 
-    // TODO: collect values from controls and submit them
+    const updateEndpoint = new URL(window.location.href);
+    updateEndpoint.pathname += '/-/update';
 
-  /*
-      fetch('/cooking/qtitles/1/-/update', {
-          method: 'POST',
-          headers: {
-              'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-              update: {
-                  'title': 'new title'
-              }
-          })
-      })
-        .then((response) => response.json())
-        .then((data) => console.log(JSON.stringify(data, null, 2)));
-  */
+    const update = {};
+    for (const [k, control] of Object.entries(controls)) {
+      update[k] = control.value;
+    }
+
+    fetch(updateEndpoint.toString(), {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            update,
+        })
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(JSON.stringify(data, null, 2)));
   }
 
 
@@ -26,6 +49,23 @@
     // Only run on the row page
     if (!document.body.classList.contains('row'))
       return;
+
+    const stubs = document.querySelectorAll('.dux-edit-stub');
+    for (const stub of [...stubs]) {
+      // console.log(stub);
+      const { control, database, table, column, initialValue } = stub.dataset;
+
+      const ctor = window[control];
+      if (!ctor) {
+        alert(`TODO: could not find constructor for edit control ${control}`);
+        continue;
+      }
+
+      const parsed = JSON.parse(initialValue);
+      const instance = new ctor(database, table, column, parsed);
+      stub.parentElement.replaceChild(instance.createControl(), stub);
+      controls[column] = instance;
+    }
 
     const form = document.querySelector('.dux-edit-form');
     if (form)
