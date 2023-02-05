@@ -1,6 +1,7 @@
 from datasette.database import Database
 from sqlite_utils.db import View, Table, validate_column_names, jsonify_if_needed
 from sqlglot import parse_one, exp
+from .utils import get_view_info
 
 # Adds two features:
 # - can navigate to the row page for a view row, eg /db/viewname/1
@@ -18,51 +19,15 @@ async def patched_primary_keys(self, table):
     if not is_view:
         return await original_primary_keys(self, table)
 
-    sql = is_view[0]['sql']
+    def fn(conn):
+        return get_view_info(conn, table)
 
-    parsed = None
-    try:
-        parsed = parse_one(sql)
-    except:
+    view_info = await self.execute_fn(fn)
+
+    if not view_info:
         return []
 
-    #print(repr(parsed))
-
-    view_exp = parsed.expression
-
-    if not 'from' in view_exp.args:
-        return []
-
-    from_exps = view_exp.args['from'].expressions
-
-    if len(from_exps) != 1:
-        return []
-
-    table_name = from_exps[0].this.this
-
-    table_pkeys = await original_primary_keys(self, table_name)
-
-    cols = view_exp.expressions
-
-    # We only want the columns that are pass-through identifiers
-    ids = []
-    for col in cols:
-        this = col.this
-        if isinstance(col, exp.Column) and isinstance(col.this, exp.Identifier):
-            ids.append(col.name)
-
-
-    #print('ids={} table_pkeys={}'.format(ids, table_pkeys))
-
-    # If every table pkey is in ids, return table_pkeys.
-    ok = True
-    for pkey in table_pkeys:
-        ok = ok and pkey in ids
-
-    if ok:
-        return table_pkeys
-
-    return []
+    return view_info['pks']
 
 original_get_all_foreign_keys = Database.get_all_foreign_keys
 async def patched_get_all_foreign_keys(self):
@@ -74,6 +39,14 @@ async def patched_get_all_foreign_keys(self):
 
     return rv
 
+def get_view_primary_keys(conn, name):
+    info = get_view_info(conn, name)
+    if 'base_table' in info:
+        return info['pks']
+
+    return []
+
+
 class UpdateableView(View):
     def __init__(self, underlying):
         self.underlying = underlying
@@ -81,14 +54,13 @@ class UpdateableView(View):
     @property
     def pks(self):
         "Primary key columns for this view."
-        # TODO: figure this out intelligently
-        return ['id']
 
-        names = [column.name for column in self.columns if column.is_pk]
-        if not names:
-            names = ["rowid"]
-        #print('pks={}'.format(names))
-        return names
+        pks = get_view_primary_keys(self.db.conn, self.name)
+
+        if pks:
+            return pks
+
+        return ['rowid']
 
     def __getattr__(self, name):
         return getattr(self.underlying, name)
@@ -167,7 +139,6 @@ def thunk_update(
 
     uv = UpdateableView(self)
     return uv.update(pk_values, updates, alter=False, conversions=None)
-
 
 def enable_yolo_view_row_pages():
     Database.primary_keys = patched_primary_keys
