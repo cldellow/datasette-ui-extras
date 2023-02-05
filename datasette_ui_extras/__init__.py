@@ -1,6 +1,5 @@
 import json
 from datasette import hookimpl
-from jinja2 import BaseLoader, FunctionLoader, TemplateNotFound
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request

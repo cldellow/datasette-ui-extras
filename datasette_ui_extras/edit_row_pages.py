@@ -1,3 +1,4 @@
+from datasette.utils.asgi import Forbidden
 from urllib.parse import urlparse, parse_qs
 
 def enable_yolo_edit_row_pages():
@@ -18,6 +19,20 @@ def enable_yolo_edit_row_pages():
             qs = parse_qs(url.query)
 
             edit_mode = '_dux_edit' in qs and qs['_dux_edit'] == ['1']
+
+            resolved = await self.ds.resolve_row(request)
+            database = resolved.db.name
+            table = resolved.table
+
+            # Ensure user has permission to update this row
+            visible, private = await self.ds.check_visibility(
+                request.actor,
+                permissions=[
+                    ("update-row", (database, table)),
+                ],
+            )
+            if not visible:
+                raise Forbidden("You do not have permission to update this table")
 
             if edit_mode:
                 templates = tuple(['edit-row' + x[3:] for x in templates])

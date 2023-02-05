@@ -69,3 +69,7 @@ END;
     response = await datasette.client.get("/db/view/1")
     assert response.status_code == 200
 
+
+# Test cases to add
+# - ?_edit_dux=1 when you lack update-row should 403
+# - ?_edit_dux=1 when you have update-row should 200
