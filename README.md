@@ -65,9 +65,9 @@ chrome.
 
 - JSON arrays of strings are 3x faster to filter and 4x faster to facet.
 
-- Enables the row page for views on base tables that have primary keys.
-
-- Enable the update operation of the JSON API for views on base tables that have primary keys.
+- Views: better support for views of the shape `SELECT ... FROM base_table`
+    - Can navigate to row page, e.g. https://dux.fly.dev/cooking/questions/1
+    - JSON API can update these rows
 
 - Advanced export: This control is hidden by default. Click the `(Advanced)` link to see it.
 
