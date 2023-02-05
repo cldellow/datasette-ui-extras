@@ -23,7 +23,7 @@ window.StringControl = class StringControl {
 (function() {
   const controls = {};
 
-  function onFormSubmit(e) {
+  async function onFormSubmit(e) {
     e.preventDefault();
 
     const updateEndpoint = new URL(window.location.href);
@@ -34,17 +34,24 @@ window.StringControl = class StringControl {
       update[k] = control.value;
     }
 
-    fetch(updateEndpoint.toString(), {
-        method: 'POST',
-        headers: {
-            'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-            update,
-        })
-    })
-      .then((response) => response.json())
-      .then((data) => console.log(JSON.stringify(data, null, 2)));
+    try {
+      const response = await fetch(updateEndpoint.toString(), {
+          method: 'POST',
+          headers: {
+              'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+              update,
+          })
+      });
+      const data = await response.json();
+      if (!data.ok) {
+        alert(`Error: ${data.errors.join(', ')}`);
+      }
+      console.log(JSON.stringify(data, null, 2));
+    } catch(e) {
+      alert(e);
+    }
   }
 
 
