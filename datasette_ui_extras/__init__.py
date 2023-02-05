@@ -31,6 +31,7 @@ def extra_css_urls(datasette):
         datasette.urls.static_plugins(PLUGIN, "layout-row-page.css"),
         datasette.urls.static_plugins(PLUGIN, "compact-cogs.css"),
         datasette.urls.static_plugins(PLUGIN, "mobile-column-menu.css"),
+        datasette.urls.static_plugins(PLUGIN, "edit-row.css"),
     ]
 
 @datasette.hookimpl(tryfirst=True)
