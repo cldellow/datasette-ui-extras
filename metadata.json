@@ -15,6 +15,11 @@
                 "users": {
                     "label_column": "display_name"
                 }
+            },
+            "plugins": {
+                "datasette-ui-extras": {
+                    "editable": ["qtitles"]
+                }
             }
         },
         "superuser": {

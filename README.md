@@ -24,10 +24,25 @@ Install this plugin in the same environment as Datasette.
 
 ## Usage
 
-The current version of the plug-in only adds read-only features.
+The read-only changes are all enabled by default.
 
-A future version will have configuration knobs to permit read-write
-of existing tables.
+To enable the edit UI by default for a given table, list them in your metadata.json:
+
+```json
+{
+  "databases": {
+    "mydb": {
+      "plugins": {
+        "datasette-ui-extras": {
+          "editable": ["my_table", "my_view"]
+        }
+      }
+    }
+  }
+}
+```
+
+You can also add `?_dux_edit=1` to the URL of a row page to get the edit view.
 
 ## Features
 

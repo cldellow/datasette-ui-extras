@@ -1,11 +1,13 @@
 import json
 from datasette import hookimpl
+import asyncio
 import markupsafe
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
+from .utils import row_edit_params
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -43,25 +45,34 @@ def extra_js_urls(datasette):
     ]
 
 @hookimpl
-def render_cell(value):
-    if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
-        try:
-            tags = json.loads(value)
-            rv = ''
+def render_cell(datasette, database, table, column, value):
+    async def inner():
+        task = asyncio.current_task()
+        request = None if not hasattr(task, '_duxui_request') else task._duxui_request
 
-            for i, tag in enumerate(tags):
-                if i > 0:
-                    rv += ', '
-                rv += markupsafe.Markup(
-                    '<span>{tag}</span>'.format(
-                        tag=markupsafe.escape(tag)
+        params = await row_edit_params(datasette, request, database, table)
+        if params and column in params:
+            print('maybe render edit control for {}.{}.{}'.format(database, table, column))
+
+        if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
+            try:
+                tags = json.loads(value)
+                rv = ''
+
+                for i, tag in enumerate(tags):
+                    if i > 0:
+                        rv += ', '
+                    rv += markupsafe.Markup(
+                        '<span>{tag}</span>'.format(
+                            tag=markupsafe.escape(tag)
+                        )
                     )
-                )
 
-            return rv
-        except:
-            pass
-    return None
+                return rv
+            except:
+                pass
+        return None
+    return inner
 
 @hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
@@ -86,3 +97,12 @@ def filters_from_request(request, database, table, datasette):
 
     return dothething
 
+
+@hookimpl(specname='actor_from_request', hookwrapper=True)
+def sniff_actor_from_request(datasette, request):
+    # TODO: This is temporary, we'll remove it when render_cell gets the request
+    # param. The code is committed, just needs a new release of Datasette.
+    asyncio.current_task()._duxui_request = request
+
+    # all corresponding hookimpls are invoked here
+    outcome = yield
