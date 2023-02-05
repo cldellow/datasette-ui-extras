@@ -44,17 +44,17 @@ To enable the edit UI by default for a given table, list them in your metadata.j
 
 You can also add `?_dux_edit=1` to the URL of a row page to get the edit view.
 
-See also the [Edit UI issue](https://github.com/cldellow/datasette-ui-extras/issues/48).
-
 ## Features
 
 ### Writing
 
-In progress.
 
 - Adds an `edit-row.html` template which is used on row pages when `_dux_edit=1` is present.
 
 - Adds an `edit_control` hook that you can use to override which control should be rendered to edit a given `(database, table, column)` tuple.
+
+In progress, see the [Edit UI issue](https://github.com/cldellow/datasette-ui-extras/issues/48) for the roadmap.
+
 
 ### Reading / browsing
 
