@@ -36,7 +36,13 @@ window.NumberControl = class NumberControl {
   }
 
   get value() {
-    return this.dirty ? Number(this.el.value) : this.initialValue;
+    if (!this.dirty)
+      return this.initialValue;
+
+    if (this.el.value === '')
+      return null;
+
+    return Number(this.el.value);
   }
 };
 
