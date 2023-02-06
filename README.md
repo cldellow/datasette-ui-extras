@@ -52,7 +52,7 @@ You can customize the edit controls that are shown to users by a hook:
 from datasette_ui_extras import hookimpl
 
 @hookimpl
-def edit_control(datasette, database, table, column):
+def edit_control(datasette, database, table, column, type, nullable, default_value, default_value_value):
     return 'ShoutyControl'
 ```
 
@@ -62,7 +62,7 @@ The class should conform to this interface:
 
 ```javascript
 window.ShoutyControl = class ShoutyControl {
-  constructor(db, table, column, initialValue) {
+  constructor(db, table, column, initialValue, type, nullable, default_value, default_value_value) {
     this.initialValue = initialValue;
     this.el = null;
   }

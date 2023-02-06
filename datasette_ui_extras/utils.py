@@ -39,12 +39,7 @@ async def row_edit_params_raw(datasette, request, database, table):
     if not visible:
         return None
 
-    editable_columns = await get_editable_columns(datasette, request, database, table)
-
-    rv = {}
-    for column in editable_columns:
-        rv[column] = {}
-
+    rv = await get_editable_columns(datasette, request, database, table)
     return rv
 
 async def get_editable_columns(datasette, request, database, table):
@@ -52,22 +47,61 @@ async def get_editable_columns(datasette, request, database, table):
 
     is_view = await db.view_exists(table)
 
+
     pkeys = await db.primary_keys(table)
     columns = await db.table_columns(table)
 
 
     if not is_view:
-        return [col for col in columns if not col in pkeys]
+        def fn(conn):
+            return get_table_info(conn, table)
+
+        table_info = await db.execute_fn(fn)
+
+        rv = {}
+        for column in table_info['columns'].values():
+            if column['pk']:
+                continue
+
+            rv[column['name']] = column
+
+        return rv
 
     def fn(conn):
         return get_view_info(conn, table)
 
     view_info = await db.execute_fn(fn)
 
-    if 'pks' in view_info and 'base_columns' in view_info:
-        return [col for col in view_info['base_columns'] if not col in view_info['pks']]
+    if not view_info:
+        return {}
 
-    return []
+    rv = {}
+    for column in view_info['base_columns']:
+        if column in view_info['pks']:
+            continue
+        rv[column] = view_info['table_info']['columns'][column]
+
+    return rv
+
+def get_table_info(conn, name):
+    data = conn.execute('select name, "type", "notnull", dflt_value, pk from pragma_table_info(?)', [name]).fetchall()
+    rv = {}
+    cols = {}
+    rv['columns'] = cols
+
+    # TODO: add sqlglot to parse CHECK constraints
+
+    # TODO: parse select "table", "from", "to" from pragma_foreign_key_list(?)
+    for name, type, notnull, dflt_value, pk in data:
+        cols[name] = {
+            'name': name,
+            'type': type,
+            'nullable': notnull == 0,
+            'default_value': dflt_value,
+            'pk': pk == 1
+        }
+
+    return rv
 
 def get_view_info(conn, name):
     sql, = conn.execute("select sql from sqlite_master where type = 'view' and name = ?", [name]).fetchone()
@@ -105,7 +139,8 @@ def get_view_info(conn, name):
         'view': name,
         'base_table': table_name,
         'pks': table_pkeys,
-        'base_columns': ids
+        'base_columns': ids,
+        'table_info': get_table_info(conn, table_name)
     }
 
 

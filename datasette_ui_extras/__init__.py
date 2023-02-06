@@ -89,16 +89,29 @@ def render_cell(datasette, database, table, column, value):
 
         params = await row_edit_params(datasette, request, database, table)
         if params and column in params:
-            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column)
+            db = datasette.get_database(database)
+
+            data = params[column]
+
+            default_value = data['default_value']
+            default_value_value = None
+
+            if default_value:
+                default_value_value = list(await db.execute("SELECT {}".format(default_value)))[0][0]
+            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, type=data['type'], nullable=data['nullable'], default_value=default_value, default_value_value=default_value_value)
 
             if control:
                 return markupsafe.Markup(
-                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}">Loading...</div>'.format(
+                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}" data-nullable="{nullable}" data-type="{type}" data-default-value="{default_value}" data-default-value-value="{default_value_value}">Loading...</div>'.format(
                         control=markupsafe.escape(control),
                         database=markupsafe.escape(database),
                         table=markupsafe.escape(table),
                         column=markupsafe.escape(column),
                         value=markupsafe.escape(json.dumps(value)),
+                        type=markupsafe.escape(data['type']),
+                        nullable=markupsafe.escape(json.dumps(data['nullable'])),
+                        default_value=markupsafe.escape(json.dumps(default_value)),
+                        default_value_value=markupsafe.escape(json.dumps(default_value_value)),
                     )
                 )
 
