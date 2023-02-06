@@ -44,6 +44,43 @@ To enable the edit UI by default for a given table, list them in your metadata.j
 
 You can also add `?_dux_edit=1` to the URL of a row page to get the edit view.
 
+### Extensibility
+
+You can customize the edit controls that are shown to users by a hook:
+
+```python
+from datasette_ui_extras import hookimpl
+
+@hookimpl
+def edit_control(datasette, database, table, column):
+    return 'ShoutyControl'
+```
+
+`ShoutyControl` must be a JavaScript class that is available to the page. This can be a pre-defined one provided by `datasette-ui-extras` or one you author via a file loaded by [`extra_js_urls`](https://docs.datasette.io/en/stable/plugin_hooks.html#extra-js-urls-template-database-table-columns-view-name-request-datasette) or inlined by [`extra_body_script`](https://docs.datasette.io/en/stable/plugin_hooks.html#extra-body-script-template-database-table-columns-view-name-request-datasette)
+
+The class should conform to this interface:
+
+```javascript
+window.ShoutyControl = class ShoutyControl {
+  constructor(db, table, column, initialValue) {
+    this.initialValue = initialValue;
+    this.el = null;
+  }
+
+  // Return a DOM element that will be shown to the user to edit this column's value
+  createControl() {
+    this.el = document.createElement('input');
+    this.el.value = this.initialValue;
+    return this.el;
+  }
+
+  get value() {
+    // Be shouty.
+    return this.el.value.toUpperCase();
+  }
+}
+```
+
 ## Features
 
 ### Writing

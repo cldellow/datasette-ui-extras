@@ -5,6 +5,7 @@ import datasette
 import asyncio
 import markupsafe
 from .plugin import pm
+from .hookspecs import hookimpl
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
