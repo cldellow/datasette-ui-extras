@@ -1,5 +1,5 @@
 window.StringControl = class StringControl {
-  constructor(db, table, column, initialValue) {
+  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
@@ -16,6 +16,27 @@ window.StringControl = class StringControl {
 
   get value() {
     return this.dirty ? this.el.value : this.initialValue;
+  }
+};
+
+window.NumberControl = class NumberControl {
+  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
+    this.initialValue = initialValue;
+    this.el = null;
+    this.dirty = false;
+  }
+
+  // Return a DOM element that will be shown to the user to edit this column's value
+  createControl() {
+    this.el = document.createElement('input');
+    this.el.value = this.initialValue;
+    this.el.addEventListener('change', () => this.dirty = true);
+
+    return this.el;
+  }
+
+  get value() {
+    return this.dirty ? Number(this.el.value) : this.initialValue;
   }
 };
 
@@ -63,7 +84,7 @@ window.StringControl = class StringControl {
     const stubs = document.querySelectorAll('.dux-edit-stub');
     for (const stub of [...stubs]) {
       // console.log(stub);
-      const { control, database, table, column, initialValue } = stub.dataset;
+      const { control, database, table, column, initialValue, type, nullable, defaultValue, defaultValueValue } = stub.dataset;
 
       const ctor = window[control];
       if (!ctor) {
@@ -72,7 +93,7 @@ window.StringControl = class StringControl {
       }
 
       const parsed = JSON.parse(initialValue);
-      const instance = new ctor(database, table, column, parsed);
+      const instance = new ctor(database, table, column, parsed, type, nullable, defaultValue, defaultValueValue);
       stub.parentElement.replaceChild(instance.createControl(), stub);
       controls[column] = instance;
     }
