@@ -87,6 +87,7 @@ window.ShoutyControl = class ShoutyControl {
 
 
 - Adds an `edit-row.html` template which is used on row pages when `_dux_edit=1` is present.
+    - This follows the [usual Datasette rules for custom templates](https://docs.datasette.io/en/stable/custom_templates.html#custom-templates), and can be overridden on a per-table basis, for example, `edit-row-mydatabase-mytable.html`.
 
 - Adds an `edit_control` hook that you can use to override which control should be rendered to edit a given `(database, table, column)` tuple.
 
