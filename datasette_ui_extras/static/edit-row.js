@@ -1,5 +1,5 @@
 window.StringControl = class StringControl {
-  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
+  constructor(db, table, column, initialValue, dataset) {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
@@ -19,8 +19,60 @@ window.StringControl = class StringControl {
   }
 };
 
+window.StringAutocompleteControl = class StringAutocompleteControl {
+  constructor(db, table, column, initialValue, dataset) {
+    this.autosuggestColumnUrl = dataset.autosuggestColumnUrl;
+    this.column = column;
+    this.initialValue = initialValue;
+    this.el = null;
+    this.dirty = false;
+  }
+
+  // Return a DOM element that will be shown to the user to edit this column's value
+  createControl() {
+    this.el = document.createElement('input');
+    this.el.value = this.initialValue;
+
+    this.el.addEventListener('change', () => this.dirty = true);
+
+    return [
+      this.el,
+      () => {
+        const awesomplete = new Awesomplete(this.el, {
+          minChars: 0,
+          filter: () => { // We will provide a list that is already filtered ...
+            return true;
+          },
+          sort: false,    // ... and sorted.
+          list: []
+        });
+
+        this.el.addEventListener('keyup', async (e) => {
+          if (e.key !== 'Backspace' && e.key.length !== 1) {
+            return;
+          }
+          const rv = await fetch(this.autosuggestColumnUrl + '?' + new URLSearchParams({
+            column: this.column,
+            q: e.target.value,
+          }));
+          const json = await rv.json();
+
+          const values = json.map(x => x.value);
+          awesomplete.list = json.map(x => x.value);
+          awesomplete.evaluate();
+        });
+
+      }
+    ]
+  }
+
+  get value() {
+    return this.dirty ? this.el.value : this.initialValue;
+  }
+};
+
 window.TextareaControl = class TextareaControl {
-  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
+  constructor(db, table, column, initialValue, dataset) {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
@@ -42,7 +94,7 @@ window.TextareaControl = class TextareaControl {
 };
 
 window.NumberControl = class NumberControl {
-  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
+  constructor(db, table, column, initialValue, dataset) {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
@@ -97,7 +149,6 @@ window.NumberControl = class NumberControl {
       if (!data.ok) {
         alert(`Error: ${data.errors.join(', ')}`);
       }
-      console.log(JSON.stringify(data, null, 2));
     } catch(e) {
       alert(e);
     }
@@ -111,8 +162,7 @@ window.NumberControl = class NumberControl {
 
     const stubs = document.querySelectorAll('.dux-edit-stub');
     for (const stub of [...stubs]) {
-      // console.log(stub);
-      const { control, database, table, column, initialValue, type, nullable, defaultValue, defaultValueValue } = stub.dataset;
+      const { control, database, table, column, initialValue } = stub.dataset;
 
       const ctor = window[control];
       if (!ctor) {
@@ -121,8 +171,15 @@ window.NumberControl = class NumberControl {
       }
 
       const parsed = JSON.parse(initialValue);
-      const instance = new ctor(database, table, column, parsed, type, nullable, defaultValue, defaultValueValue);
-      stub.parentElement.replaceChild(instance.createControl(), stub);
+      const instance = new ctor(database, table, column, parsed, stub.dataset);
+
+      const createControlResult = instance.createControl();
+
+      const controlElement = Array.isArray(createControlResult) ? createControlResult[0] : createControlResult;
+      stub.parentElement.replaceChild(controlElement, stub);
+
+      if(Array.isArray(createControlResult))
+        createControlResult[1]();
       controls[column] = instance;
     }
 

@@ -75,13 +75,17 @@ js_path, js_contents = fingerprint(js_files, 'js')
 @datasette.hookimpl
 def extra_css_urls(datasette):
     return [
-        css_path
+        css_path,
+        # https://cdnjs.com/libraries/awesomplete
+        'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css',
     ]
 
 @datasette.hookimpl(tryfirst=True)
 def extra_js_urls(datasette):
     return [
-        js_path
+        js_path,
+        # https://cdnjs.com/libraries/awesomplete
+        'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js',
     ]
 
 @datasette.hookimpl
@@ -104,8 +108,12 @@ def render_cell(datasette, database, table, column, value):
             control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, metadata=data)
 
             if control:
+                autosuggest_column_url = None
+                if 'base_table' in data:
+                    base_table = data['base_table']
+                    autosuggest_column_url = '{}/-/dux-autosuggest-column'.format(datasette.urls.table(database, base_table))
                 return markupsafe.Markup(
-                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}" data-nullable="{nullable}" data-type="{type}" data-default-value="{default_value}" data-default-value-value="{default_value_value}">Loading...</div>'.format(
+                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}" data-nullable="{nullable}" data-type="{type}" data-default-value="{default_value}" data-default-value-value="{default_value_value}" data-autosuggest-column-url="{autosuggest_column_url}">Loading...</div>'.format(
                         control=markupsafe.escape(control),
                         database=markupsafe.escape(database),
                         table=markupsafe.escape(table),
@@ -115,6 +123,7 @@ def render_cell(datasette, database, table, column, value):
                         nullable=markupsafe.escape(json.dumps(data['nullable'])),
                         default_value=markupsafe.escape(json.dumps(default_value)),
                         default_value_value=markupsafe.escape(json.dumps(default_value_value)),
+                        autosuggest_column_url=markupsafe.escape(autosuggest_column_url)
                     )
                 )
 

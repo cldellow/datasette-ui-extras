@@ -16,6 +16,14 @@ numeric_types = [
     'float',
 ]
 
+# In general, hooks higher in this file run after hooks lower than
+# them.
+
+@hookimpl(trylast=True, specname='edit_control')
+def string_control(datasette, database, table, column):
+    return 'StringAutocompleteControl'
+    #return 'StringControl'
+
 @hookimpl(specname='edit_control')
 def number_control(metadata):
     type = metadata['type']
@@ -27,6 +35,4 @@ def textarea_control(metadata):
     if 'texts_newline' in metadata and metadata['texts_newline']:
         return 'TextareaControl'
 
-@hookimpl(trylast=True, specname='edit_control')
-def string_control(datasette, database, table, column):
-    return 'StringControl'
+

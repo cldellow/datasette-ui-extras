@@ -102,9 +102,12 @@ async def annotate_columns(rv, db, table_name):
 
         to_annotate = rv[column]
         for key in row.keys():
-            if key == 'table' or key == 'column':
+            if key == 'column':
                 continue
-            to_annotate[key] = row[key]
+            elif key == 'table':
+                to_annotate['base_table'] = row[key]
+            else:
+                to_annotate[key] = row[key]
 
 
 def get_table_info(conn, name):

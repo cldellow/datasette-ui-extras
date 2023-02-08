@@ -63,7 +63,7 @@ The class should conform to this interface:
 
 ```javascript
 window.ShoutyControl = class ShoutyControl {
-  constructor(db, table, column, initialValue, type, nullable, defaultValue, defaultValueValue) {
+  constructor(db, table, column, initialValue, dataset) {
     this.initialValue = initialValue;
     this.el = null;
   }
