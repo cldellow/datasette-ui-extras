@@ -12,6 +12,7 @@ from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
 from .utils import row_edit_params
+from .column_stats import compute_dux_column_stats
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -140,12 +141,17 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     return facets_extra_body_script(template, database, table, columns, view_name, request, datasette)
 
 @datasette.hookimpl
-def startup():
+def startup(datasette):
     enable_yolo_facets()
     enable_yolo_arraycontains_filter()
     enable_yolo_exact_filter()
     enable_yolo_view_row_pages()
     enable_yolo_edit_row_pages()
+
+    async def inner():
+        await compute_dux_column_stats(datasette)
+
+    return inner
 
 @datasette.hookimpl
 def register_facet_classes():
