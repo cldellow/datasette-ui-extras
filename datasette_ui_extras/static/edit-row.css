@@ -28,3 +28,21 @@ body.row input:focus, body.row textarea:focus {
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
 }
+
+.dux-json-tags li {
+  list-style-type: none;
+  line-height: 24px;
+}
+
+.dux-json-tags li span {
+  vertical-align: top;
+}
+
+.dux-remove-me {
+  display: inline-block;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  margin-right: 0.25em;
+  margin-bottom: 0.5em;
+}

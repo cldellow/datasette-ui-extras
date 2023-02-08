@@ -17,6 +17,7 @@ CREATE TABLE {}(
   computed_at text not null default (datetime()),
   "limit" integer, -- Was this based on SELECT *, or SELECT * LIMIT N ?
   distinct_limit int not null, -- How many distinct examples were we willing to capture?
+  count integer not null, -- count(*)
   nulls integer not null, -- the output of COUNT(*) FILTER (WHERE TYPEOF(column) == 'null')
   integers integer not null, -- as above, but integer
   reals integer not null, -- as above, but real
@@ -193,6 +194,7 @@ WITH xs AS (SELECT "{}" AS value FROM "{}" LIMIT {})
 SELECT
   min(case when typeof(value) == 'blob' or (typeof(value) == 'text' and length(value) > 100) then null else value end) as min,
   max(case when typeof(value) == 'blob' or (typeof(value) == 'text' and length(value) > 100) then null else value end) as max,
+  count(*) as count,
   count(*) filter (where typeof(value) == 'null') as nulls,
   count(*) filter (where typeof(value) == 'integer') as integers,
   count(*) filter (where typeof(value) == 'real') as reals,
@@ -260,6 +262,7 @@ LIMIT {}
         'distinct_limit': distinct_limit,
         'min': summary_stats['min'],
         'max': summary_stats['max'],
+        'count': summary_stats['count'],
         'nulls': summary_stats['nulls'],
         'integers': summary_stats['integers'],
         'reals': summary_stats['reals'],

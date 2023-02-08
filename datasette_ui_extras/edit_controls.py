@@ -1,4 +1,5 @@
 from .hookspecs import hookimpl
+import json
 
 # From https://www.sqlite.org/datatype3.html#affinity_name_examples
 numeric_types = [
@@ -35,4 +36,23 @@ def textarea_control(metadata):
     if 'texts_newline' in metadata and metadata['texts_newline']:
         return 'TextareaControl'
 
+@hookimpl(specname='edit_control')
+def json_tags_control(metadata):
+    if 'jsons' in metadata and metadata['jsons'] + metadata['nulls'] == metadata['count']:
+        try:
+            min_parsed = json.loads(metadata['min'])
+            max_parsed = json.loads(metadata['max'])
+
+            if not isinstance(min_parsed, list) or not isinstance(max_parsed, list):
+                return
+
+            if min_parsed and not isinstance(min_parsed[0], str):
+                return
+
+            if max_parsed and not isinstance(max_parsed[0], str):
+                return
+
+            return 'JSONTagsControl'
+        except:
+            return
 
