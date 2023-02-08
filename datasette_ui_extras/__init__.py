@@ -12,7 +12,7 @@ from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
 from .utils import row_edit_params
-from .column_stats import compute_dux_column_stats
+from .column_stats import compute_dux_column_stats, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -192,3 +192,22 @@ def register_routes():
             )
         ),
     ]
+
+@datasette.hookimpl
+def get_metadata(datasette, key, database, table):
+    hide_tables = {
+        'tables': {
+            DUX_COLUMN_STATS: { 'hidden': True },
+            DUX_COLUMN_STATS_VALUES: { 'hidden': True },
+        }
+    }
+
+    rv = {
+        'databases': {
+        }
+    }
+
+    for db in datasette.databases.keys():
+        rv['databases'][db] = hide_tables
+
+    return rv
