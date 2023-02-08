@@ -2,8 +2,10 @@ import json
 import os
 import hashlib
 import datasette
+from datasette import Response
 import asyncio
 import markupsafe
+from urllib.parse import parse_qs
 from .plugin import pm
 from .hookspecs import hookimpl
 from .facets import enable_yolo_facets, facets_extra_body_script
@@ -12,7 +14,7 @@ from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
 from .utils import row_edit_params
-from .column_stats import compute_dux_column_stats, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
+from .column_stats import compute_dux_column_stats, autosuggest_column, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -191,7 +193,25 @@ def register_routes():
                 content_type="text/javascript; charset=utf-8"
             )
         ),
+        (r"^/(?P<dbname>.*)/(?P<tablename>.*)/-/dux-autosuggest-column$", handle_autosuggest_column)
     ]
+
+async def handle_autosuggest_column(datasette, request):
+    qs = parse_qs(request.query_string)
+
+    column = qs['column'][0]
+    q = qs.get('q', [''])[0]
+    dbname = request.url_vars["dbname"]
+    tablename = request.url_vars["tablename"]
+
+    db = datasette.get_database(dbname)
+
+    def fn(conn):
+        return autosuggest_column(conn, tablename, column, q)
+    suggestions = await db.execute_fn(fn)
+    return Response.json(
+        suggestions
+    )
 
 @datasette.hookimpl
 def get_metadata(datasette, key, database, table):

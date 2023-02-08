@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import json
 
 DUX_COLUMN_STATS = 'dux_column_stats'
 DUX_COLUMN_STATS_VALUES = 'dux_column_stats_values'
@@ -155,8 +156,8 @@ def save_column_stats(conn, table, column, computed):
             )
         else:
             conn.executemany(
-                'INSERT INTO {}("table", "column", "value", "count") VALUES (?, ?, ?, ?)'.format(DUX_COLUMN_STATS_VALUES),
-                [(table, column, row[0], row[1]) for row in distincts]
+                'INSERT INTO {}("table", "column", "value", "count", "pks") VALUES (?, ?, ?, ?, ?)'.format(DUX_COLUMN_STATS_VALUES),
+                [(table, column, row[0], row[1], row[2]) for row in distincts]
             )
 
         keys = list(computed.keys())
@@ -221,7 +222,7 @@ FROM xs
 
     distincts_sql = '''
 WITH xs AS (SELECT {} AS "pk", "{}" AS value FROM "{}" LIMIT {})
-SELECT value, count(*) as count, json_group_array(pk) AS pks
+SELECT value, count(*) as count, json_group_array(json(pk)) AS pks
 FROM xs
 WHERE typeof(value) != 'blob' AND (typeof(value) != 'text' OR length(value) <= 100)
 GROUP BY 1
@@ -286,3 +287,15 @@ async def compute_dux_column_stats(ds):
             continue
 
         await ensure_dux_column_stats(db)
+
+def autosuggest_column(conn, table, column, q):
+    rows = conn.execute(
+        'SELECT value, count, pks FROM {} WHERE "table" = ? AND "column" = ? AND lower(value) LIKE ? ORDER BY count DESC LIMIT 10'.format(DUX_COLUMN_STATS_VALUES),
+        [table, column, q.lower() + '%']
+    ).fetchall()
+
+    return [{
+        'value': row['value'],
+        'count': row['count'],
+        'pks': None if not row['pks'] else json.loads(row['pks'])
+    } for row in rows]
