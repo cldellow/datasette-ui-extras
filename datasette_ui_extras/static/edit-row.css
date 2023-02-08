@@ -1,3 +1,11 @@
+body.row .table-wrapper {
+  overflow-x: initial;
+}
+
+body.row .awesomplete {
+  width: 100%;
+}
+
 body.row input, body.row textarea {
   padding: 6px 12px;
   font-size: 16px;
