@@ -6,6 +6,15 @@ body.row .awesomplete {
   width: 100%;
 }
 
+body.row .awesomplete li {
+  list-style-type: none;
+}
+
+body.row .awesomplete mark {
+  background: initial;
+}
+
+
 body.row input, body.row textarea {
   padding: 6px 12px;
   font-size: 16px;
