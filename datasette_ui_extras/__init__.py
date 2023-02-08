@@ -28,7 +28,7 @@ css_files = [
     "layout-row-page.css",
     "compact-cogs.css",
     "mobile-column-menu.css",
-    "edit-row.css",
+    "edit-row/",
 ]
 
 js_files = [
@@ -38,20 +38,30 @@ js_files = [
     'lazy-facets.js',
     'layout-row-page.js',
     "mobile-column-menu.js",
-    "edit-row.js",
+    "edit-row/",
 ]
 
 def fingerprint(files, ext):
     def concatenate():
         rv = []
         for fname in files:
-            rv.append('/* {} */'.format(fname))
-            fpath = os.path.abspath(os.path.join(__file__, '..', 'static', fname))
 
-            f = open(fpath, 'r')
-            contents = f.read()
-            f.close()
-            rv.append(contents)
+            fpaths = [os.path.abspath(os.path.join(__file__, '..', 'static', fname))]
+
+            if fname.endswith('/'):
+                fpaths = []
+
+                for fname in sorted(os.scandir(os.path.join(os.path.abspath(os.path.join(__file__, '..', 'static')), fname[:-1])), key=lambda f: f.path):
+                    if fname.path.endswith('.' + ext):
+                        fpaths.append(os.path.abspath(fname.path))
+
+
+            for fpath in fpaths:
+                rv.append('/* {} */'.format(fpath))
+                f = open(fpath, 'r')
+                contents = f.read()
+                f.close()
+                rv.append(contents)
 
         return '\n\n'.join(rv)
 
