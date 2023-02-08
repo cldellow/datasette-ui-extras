@@ -1,5 +1,6 @@
 from urllib.parse import urlparse, parse_qs
 from sqlglot import parse_one, exp
+from .column_stats import DUX_COLUMN_STATS
 
 # Returns:
 # - None if the edit UI ought not be shown
@@ -65,6 +66,8 @@ async def get_editable_columns(datasette, request, database, table):
 
             rv[column['name']] = column
 
+        await annotate_columns(rv, db, table)
+
         return rv
 
     def fn(conn):
@@ -81,7 +84,28 @@ async def get_editable_columns(datasette, request, database, table):
             continue
         rv[column] = view_info['table_info']['columns'][column]
 
+    await annotate_columns(rv, db, view_info['base_table'])
+
     return rv
+
+async def annotate_columns(rv, db, table_name):
+    results = []
+    try:
+        results = list(await db.execute('SELECT * FROM {} WHERE "table" = ?'.format(DUX_COLUMN_STATS), [table_name]))
+    except:
+        return
+
+    for row in results:
+        column = row['column']
+        if not column in rv:
+            continue
+
+        to_annotate = rv[column]
+        for key in row.keys():
+            if key == 'table' or key == 'column':
+                continue
+            to_annotate[key] = row[key]
+
 
 def get_table_info(conn, name):
     data = conn.execute('select name, "type", "notnull", dflt_value, pk from pragma_table_info(?)', [name]).fetchall()

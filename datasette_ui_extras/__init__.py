@@ -99,7 +99,7 @@ def render_cell(datasette, database, table, column, value):
 
             if default_value:
                 default_value_value = list(await db.execute("SELECT {}".format(default_value)))[0][0]
-            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, type=data['type'], nullable=data['nullable'], default_value=default_value, default_value_value=default_value_value)
+            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, metadata=data)
 
             if control:
                 return markupsafe.Markup(

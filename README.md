@@ -52,7 +52,8 @@ You can customize the edit controls that are shown to users by a hook:
 from datasette_ui_extras import hookimpl
 
 @hookimpl
-def edit_control(datasette, database, table, column, type, nullable, default_value, default_value_value):
+def edit_control(datasette, database, table, column, metadata):
+    # metadata has the contents of the dux_column_stats row for this column, if available.
     return 'ShoutyControl'
 ```
 
