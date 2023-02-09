@@ -6,14 +6,14 @@ from datasette import Response
 import asyncio
 import markupsafe
 from urllib.parse import parse_qs
-from .plugin import pm
 from .hookspecs import hookimpl
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
+from .plugin import pm
+from .edit_controls import render_cell_edit_control
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
-from .utils import row_edit_params
 from .column_stats import compute_dux_column_stats, autosuggest_column, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
 
 PLUGIN = 'datasette-ui-extras'
@@ -98,78 +98,25 @@ def extra_js_urls(datasette):
         'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js',
     ]
 
-def to_camel_case(snake_str):
-    # from https://stackoverflow.com/a/19053800
-    components = snake_str.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
-
 @datasette.hookimpl
 def render_cell(datasette, database, table, column, value):
-    async def inner():
-        task = asyncio.current_task()
-        request = None if not hasattr(task, '_duxui_request') else task._duxui_request
+    if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
+        try:
+            tags = json.loads(value)
+            rv = ''
 
-        params = await row_edit_params(datasette, request, database, table)
-        if params and column in params:
-            db = datasette.get_database(database)
-
-            data = params[column]
-
-            default_value = data['default_value']
-            default_value_value = None
-
-            if default_value:
-                default_value_value = list(await db.execute("SELECT {}".format(default_value)))[0][0]
-            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, metadata=data)
-
-            if control:
-                config = {}
-
-                if isinstance(control, tuple):
-                    for k, v in control[1].items():
-                        config[k] = v
-                    control = control[0]
-
-                for k, v in data.items():
-                    if k == 'name':
-                        k = 'column'
-                    config[to_camel_case(k)] = v
-
-                if 'base_table' in data:
-                    base_table = data['base_table']
-                    config['autosuggestColumnUrl'] = '{}/-/dux-autosuggest-column'.format(datasette.urls.table(database, base_table))
-
-                config['database'] = database
-                config['tableOrView'] = table
-                config['nullable'] = data['nullable'] == '1'
-
-                return markupsafe.Markup(
-                    '<div class="dux-edit-stub" data-control="{control}" data-initial-value="{value}" data-config="{config}">Loading...</div>'.format(
-                        control=markupsafe.escape(control),
-                        value=markupsafe.escape(json.dumps(value)),
-                        config=markupsafe.escape(json.dumps(config)),
+            for i, tag in enumerate(tags):
+                if i > 0:
+                    rv += ', '
+                rv += markupsafe.Markup(
+                    '<span>{tag}</span>'.format(
+                        tag=markupsafe.escape(tag)
                     )
                 )
 
-        if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
-            try:
-                tags = json.loads(value)
-                rv = ''
-
-                for i, tag in enumerate(tags):
-                    if i > 0:
-                        rv += ', '
-                    rv += markupsafe.Markup(
-                        '<span>{tag}</span>'.format(
-                            tag=markupsafe.escape(tag)
-                        )
-                    )
-
-                return rv
-            except:
-                pass
-        return None
-    return inner
+            return rv
+        except:
+            pass
 
 @datasette.hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
