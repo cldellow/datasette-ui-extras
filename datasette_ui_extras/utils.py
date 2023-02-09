@@ -99,7 +99,7 @@ async def annotate_columns(rv, db, table_name):
     choices = get_column_choices_from_check_constraints(schema)
     for column, options in choices.items():
         if column in rv:
-            rv[column]['choices'] = options
+            rv[column]['check_choices'] = options
 
 
     results = []

@@ -73,10 +73,10 @@ def textarea_control(metadata):
 
 @hookimpl(specname='edit_control')
 def dropdown_control(metadata):
-    if not 'choices' in metadata:
+    if not 'check_choices' in metadata:
         return
 
-    return 'DropdownControl', { 'choices': [{ 'value': x, 'label': x } for x in metadata['choices']] }
+    return 'DropdownControl', { 'choices': [{ 'value': x, 'label': x } for x in metadata['check_choices']] }
 
 @hookimpl(specname='edit_control')
 def json_tags_control(metadata):
