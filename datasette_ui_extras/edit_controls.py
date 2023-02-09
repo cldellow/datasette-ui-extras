@@ -46,7 +46,7 @@ def boolean_control(metadata):
     type = metadata['type']
 
     is_boolean = type.lower() == 'boolean'
-    is_booleanish = 'min' in metadata and 'max' in metadata and metadata['min'] >= 0 and metadata['max'] <= 1
+    is_booleanish = 'min' in metadata and 'max' in metadata and isinstance(metadata['min'], int) and isinstance(metadata['max'], int) and metadata['min'] >= 0 and metadata['max'] <= 1
 
     if not is_boolean and not is_booleanish:
         return
