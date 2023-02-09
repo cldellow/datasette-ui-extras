@@ -42,6 +42,31 @@ def number_control(metadata):
         return 'NumberControl'
 
 @hookimpl(specname='edit_control')
+def boolean_control(metadata):
+    type = metadata['type']
+
+    is_boolean = type.lower() == 'boolean'
+    is_booleanish = 'min' in metadata and 'max' in metadata and metadata['min'] >= 0 and metadata['max'] <= 1
+
+    if not is_boolean and not is_booleanish:
+        return
+
+    if not metadata['nullable']:
+        return 'CheckboxControl'
+
+    if type.lower() in numeric_types or type.lower() == 'boolean':
+        return 'DropdownControl', { 'choices': [
+            { 'value': 0, 'label': 'False' },
+            { 'value': 1, 'label': 'True' },
+        ]}
+
+    return 'DropdownControl', { 'choices': [
+        { 'value': '0', 'label': 'False' },
+        { 'value': '1', 'label': 'True' },
+    ]}
+
+
+@hookimpl(specname='edit_control')
 def textarea_control(metadata):
     if 'texts_newline' in metadata and metadata['texts_newline']:
         return 'TextareaControl'
@@ -51,7 +76,7 @@ def dropdown_control(metadata):
     if not 'choices' in metadata:
         return
 
-    return 'DropdownControl', { 'choices': metadata['choices'] }
+    return 'DropdownControl', { 'choices': [{ 'value': x, 'label': x } for x in metadata['choices']] }
 
 @hookimpl(specname='edit_control')
 def json_tags_control(metadata):
@@ -91,8 +116,6 @@ def render_cell_edit_control(datasette, database, table, column, value):
             if default_value:
                 default_value_value = list(await db.execute("SELECT {}".format(default_value)))[0][0]
             control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, metadata=data)
-            print(control)
-
             if control:
                 config = {}
 
@@ -112,7 +135,6 @@ def render_cell_edit_control(datasette, database, table, column, value):
 
                 config['database'] = database
                 config['tableOrView'] = table
-                config['nullable'] = data['nullable'] == '1'
 
                 return markupsafe.Markup(
                     '<div class="dux-edit-stub" data-control="{control}" data-initial-value="{value}" data-config="{config}">Loading...</div>'.format(

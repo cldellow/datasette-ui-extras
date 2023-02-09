@@ -13,15 +13,16 @@ window.DropdownControl = class DropdownControl {
 
     const choices = [];
     if (this.config.nullable) {
-      choices.push(null);
+      choices.push({value: null, label: 'Not set'});
     }
 
     choices.push(...this.config.choices);
     for (const choice of choices) {
       const opt = document.createElement('option');
-      opt.value = JSON.stringify(choice);
-      opt.innerText = choice === null ? 'Not set' : choice;
-      if (this.initialValue === choice)
+      opt.value = JSON.stringify(choice.value);
+      opt.innerText = choice.label;
+
+      if (this.initialValue === choice.value)
         opt.selected = true;
 
       this.el.appendChild(opt);

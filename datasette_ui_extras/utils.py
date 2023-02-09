@@ -120,7 +120,10 @@ async def annotate_columns(rv, db, table_name):
             elif key == 'table':
                 to_annotate['base_table'] = row[key]
             else:
-                to_annotate[key] = row[key]
+                value = row[key]
+                if key == 'nullable':
+                    value = not not value
+                to_annotate[key] = value
 
 
 def get_table_info(conn, name):

@@ -31,6 +31,12 @@ body.row input, body.row textarea, body.row select {
   width: 80%;
 }
 
+body.row input[type="checkbox"] {
+  appearance: auto;
+  width: 24px;
+  height: 24px;
+}
+
 body.row input:focus, body.row textarea:focus, body.row select:focus {
   color: #212529;
   background-color: #fff;
@@ -40,7 +46,7 @@ body.row input:focus, body.row textarea:focus, body.row select:focus {
 }
 
 body.row select {
-  appearance: initial;
+  appearance: auto;
 }
 
 .dux-json-tags li {
