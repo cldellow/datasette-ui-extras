@@ -1,6 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 from sqlglot import parse_one, exp
 from .column_stats import DUX_COLUMN_STATS
+from .schema_utils import get_column_choices_from_check_constraints
 
 # Returns:
 # - None if the edit UI ought not be shown
@@ -89,6 +90,18 @@ async def get_editable_columns(datasette, request, database, table):
     return rv
 
 async def annotate_columns(rv, db, table_name):
+    # Annotate rv with data from a few places:
+    # (1) sqlite_master - parse the table schema for CHECK (column IN ('a', 'b', ..., 'z')) constraints
+    #     These are a closed set of options.
+    #
+    # (2) dux_column_stats - this is summary metadata that can inform what UI is best to show.
+    schema = list(await db.execute("SELECT sql FROM sqlite_master WHERE name = ? AND type = 'table'", [table_name]))[0][0]
+    choices = get_column_choices_from_check_constraints(schema)
+    for column, options in choices.items():
+        if column in rv:
+            rv[column]['choices'] = options
+
+
     results = []
     try:
         results = list(await db.execute('SELECT * FROM {} WHERE "table" = ?'.format(DUX_COLUMN_STATS), [table_name]))

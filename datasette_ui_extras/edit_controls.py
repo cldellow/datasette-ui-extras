@@ -37,6 +37,13 @@ def textarea_control(metadata):
         return 'TextareaControl'
 
 @hookimpl(specname='edit_control')
+def dropdown_control(metadata):
+    if not 'choices' in metadata:
+        return
+
+    return 'DropdownControl', { 'choices': metadata['choices'] }
+
+@hookimpl(specname='edit_control')
 def json_tags_control(metadata):
     if 'jsons' in metadata and metadata['jsons'] + metadata['nulls'] == metadata['count']:
         try:

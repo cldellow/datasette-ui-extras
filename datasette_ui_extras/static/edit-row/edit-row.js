@@ -39,7 +39,7 @@
 
     const stubs = document.querySelectorAll('.dux-edit-stub');
     for (const stub of [...stubs]) {
-      const { control, database, table, column, initialValue } = stub.dataset;
+      const { control, initialValue, config } = stub.dataset;
 
       const ctor = window[control];
       if (!ctor) {
@@ -47,8 +47,10 @@
         continue;
       }
 
-      const parsed = JSON.parse(initialValue);
-      const instance = new ctor(database, table, column, parsed, stub.dataset);
+
+      const parsedConfig = JSON.parse(config);
+      const parsedInitialValue = JSON.parse(initialValue);
+      const instance = new ctor(parsedInitialValue, parsedConfig);
 
       const createControlResult = instance.createControl();
 
@@ -57,7 +59,7 @@
 
       if(Array.isArray(createControlResult))
         createControlResult[1]();
-      controls[column] = instance;
+      controls[parsedConfig['column']] = instance;
     }
 
     const form = document.querySelector('.dux-edit-form');

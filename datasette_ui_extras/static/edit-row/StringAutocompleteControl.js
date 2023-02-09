@@ -1,7 +1,7 @@
 window.StringAutocompleteControl = class StringAutocompleteControl {
-  constructor(db, table, column, initialValue, dataset) {
-    this.autosuggestColumnUrl = dataset.autosuggestColumnUrl;
-    this.column = column;
+  constructor(initialValue, config) {
+    this.autosuggestColumnUrl = config.autosuggestColumnUrl;
+    this.column = config.column;
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;

@@ -98,6 +98,11 @@ def extra_js_urls(datasette):
         'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js',
     ]
 
+def to_camel_case(snake_str):
+    # from https://stackoverflow.com/a/19053800
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
 @datasette.hookimpl
 def render_cell(datasette, database, table, column, value):
     async def inner():
@@ -118,22 +123,31 @@ def render_cell(datasette, database, table, column, value):
             control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, metadata=data)
 
             if control:
-                autosuggest_column_url = None
+                config = {}
+
+                if isinstance(control, tuple):
+                    for k, v in control[1].items():
+                        config[k] = v
+                    control = control[0]
+
+                for k, v in data.items():
+                    if k == 'name':
+                        k = 'column'
+                    config[to_camel_case(k)] = v
+
                 if 'base_table' in data:
                     base_table = data['base_table']
-                    autosuggest_column_url = '{}/-/dux-autosuggest-column'.format(datasette.urls.table(database, base_table))
+                    config['autosuggestColumnUrl'] = '{}/-/dux-autosuggest-column'.format(datasette.urls.table(database, base_table))
+
+                config['database'] = database
+                config['tableOrView'] = table
+                config['nullable'] = data['nullable'] == '1'
+
                 return markupsafe.Markup(
-                    '<div class="dux-edit-stub" data-database="{database}" data-table="{table}" data-column="{column}" data-control="{control}" data-initial-value="{value}" data-nullable="{nullable}" data-type="{type}" data-default-value="{default_value}" data-default-value-value="{default_value_value}" data-autosuggest-column-url="{autosuggest_column_url}">Loading...</div>'.format(
+                    '<div class="dux-edit-stub" data-control="{control}" data-initial-value="{value}" data-config="{config}">Loading...</div>'.format(
                         control=markupsafe.escape(control),
-                        database=markupsafe.escape(database),
-                        table=markupsafe.escape(table),
-                        column=markupsafe.escape(column),
                         value=markupsafe.escape(json.dumps(value)),
-                        type=markupsafe.escape(data['type']),
-                        nullable=markupsafe.escape(json.dumps(data['nullable'])),
-                        default_value=markupsafe.escape(json.dumps(default_value)),
-                        default_value_value=markupsafe.escape(json.dumps(default_value_value)),
-                        autosuggest_column_url=markupsafe.escape(autosuggest_column_url)
+                        config=markupsafe.escape(json.dumps(config)),
                     )
                 )
 

@@ -15,8 +15,9 @@ body.row .awesomplete mark {
 }
 
 
-body.row input, body.row textarea {
+body.row input, body.row textarea, body.row select {
   padding: 6px 12px;
+  box-sizing: content-box;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
@@ -30,12 +31,16 @@ body.row input, body.row textarea {
   width: 80%;
 }
 
-body.row input:focus, body.row textarea:focus {
+body.row input:focus, body.row textarea:focus, body.row select:focus {
   color: #212529;
   background-color: #fff;
   border-color: #86b7fe;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
+}
+
+body.row select {
+  appearance: initial;
 }
 
 .dux-json-tags li {

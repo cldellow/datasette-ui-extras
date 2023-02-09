@@ -55,6 +55,10 @@ from datasette_ui_extras import hookimpl
 def edit_control(datasette, database, table, column, metadata):
     # metadata has the contents of the dux_column_stats row for this column, if available.
     return 'ShoutyControl'
+
+    # You can also return a tuple, the second argument will be merged into the config
+    # object passed to your JS interface:
+    return 'ShoutyControl', { 'suffix': '!!!' }
 ```
 
 `ShoutyControl` must be a JavaScript class that is available to the page. This can be a pre-defined one provided by `datasette-ui-extras` or one you author via a file loaded by [`extra_js_urls`](https://docs.datasette.io/en/stable/plugin_hooks.html#extra-js-urls-template-database-table-columns-view-name-request-datasette) or inlined by [`extra_body_script`](https://docs.datasette.io/en/stable/plugin_hooks.html#extra-body-script-template-database-table-columns-view-name-request-datasette)
@@ -63,7 +67,7 @@ The class should conform to this interface:
 
 ```javascript
 window.ShoutyControl = class ShoutyControl {
-  constructor(db, table, column, initialValue, dataset) {
+  constructor(initialValue, config) {
     this.initialValue = initialValue;
     this.el = null;
   }

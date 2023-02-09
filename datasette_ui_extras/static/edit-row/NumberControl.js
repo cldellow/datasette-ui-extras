@@ -1,5 +1,5 @@
 window.NumberControl = class NumberControl {
-  constructor(db, table, column, initialValue, dataset) {
+  constructor(initialValue, config) {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
