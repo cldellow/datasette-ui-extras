@@ -90,7 +90,7 @@ def ensure_schema_conn(conn):
         return
 
     # Drop all the tables, in reverse order so fkeys don't cause us grief.
-    for table in reversed(table_schemas.keys()):
+    for table in reversed(list(table_schemas.keys())):
         conn.execute('DROP TABLE IF EXISTS {}'.format(table))
 
     for table, sql in table_schemas.items():
