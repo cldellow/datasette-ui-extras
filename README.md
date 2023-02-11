@@ -24,6 +24,9 @@ Install this plugin in the same environment as Datasette.
 
 ### Minimum requirements
 
+You must be on Linux-x86, because we load the sqlean crypto library, and have
+only bothered to get it working for that platform. See [#69](https://github.com/cldellow/datasette-ui-extras/issues/69) for more info.
+
 `datasette-ui-extras` uses some modern features of SQL, supported only in
 newer versions of SQLite.
 

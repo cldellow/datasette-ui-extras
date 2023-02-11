@@ -211,3 +211,12 @@ def get_metadata(datasette, key, database, table):
         rv['databases'][db] = hide_tables
 
     return rv
+
+@datasette.hookimpl
+def prepare_connection(conn):
+    conn.enable_load_extension(True)
+
+    crypto_so = os.path.abspath(os.path.join(__file__, '..', 'static', 'extensions', 'crypto.so'))
+    conn.execute("SELECT load_extension(?)", [crypto_so]).fetchone()
+    conn.enable_load_extension(False)
+
