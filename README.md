@@ -22,6 +22,27 @@ Install this plugin in the same environment as Datasette.
 
     datasette install datasette-ui-extras
 
+### Minimum requirements
+
+`datasette-ui-extras` uses some modern features of SQL, supported only in
+newer versions of SQLite.
+
+You need at least version 3.25.0.
+
+> **Note**
+>
+> If your operating system's version of SQLite does not meet these requirements,
+> consider using [pysqlite3-binary](https://github.com/coleifer/pysqlite3), which provides
+> a modern version of SQLite.
+
+Features we use:
+
+- the `JSON1` extension (minimum SQLite version varies by OS)
+- Window functions, introduced in [version 3.25.0](https://sqlite.org/changes.html#version_3_25_0) (2018-09-15)
+- Row values, introduced in [version 3.15.0](https://sqlite.org/changes.html#version_3_15_0) (2016-10-14)
+- Loadable extensions, to load [the sqlean crypto library](https://github.com/nalgeon/sqlean/blob/main/docs/crypto.md) for generating hashes
+
+
 ## Usage
 
 The read-only changes are all enabled by default.
