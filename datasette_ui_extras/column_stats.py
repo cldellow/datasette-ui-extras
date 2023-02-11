@@ -123,8 +123,8 @@ async def fetch_column_stats(db, table, column):
         return
 
     t = time.time()
-    limit = 100
-    distinct_limit = 100
+    limit = 1_000_000
+    distinct_limit = 1_000_000
     rows = list(await db.execute('select * from {} where "table" = ? and "column" = ?'.format(DUX_COLUMN_STATS), [table, column]))
 
     if rows:
