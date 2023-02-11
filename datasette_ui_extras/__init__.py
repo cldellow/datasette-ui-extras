@@ -86,16 +86,16 @@ js_path, js_contents = fingerprint(js_files, 'js')
 def extra_css_urls(datasette):
     return [
         css_path,
-        # https://cdnjs.com/libraries/awesomplete
         'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css',
+        'https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.css'
     ]
 
-@datasette.hookimpl(tryfirst=True)
+@datasette.hookimpl()
 def extra_js_urls(datasette):
     return [
         js_path,
-        # https://cdnjs.com/libraries/awesomplete
         'https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js',
+        'https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js'
     ]
 
 @datasette.hookimpl
