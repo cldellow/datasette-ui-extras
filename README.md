@@ -42,7 +42,6 @@ Features we use:
 - Row values, introduced in [version 3.15.0](https://sqlite.org/changes.html#version_3_15_0) (2016-10-14)
 - Loadable extensions, to load [the sqlean crypto library](https://github.com/nalgeon/sqlean/blob/main/docs/crypto.md) for generating hashes
 
-
 ## Usage
 
 The read-only changes are all enabled by default.
@@ -64,6 +63,8 @@ To enable the edit UI by default for a given table, list them in your metadata.j
 ```
 
 You can also add `?_dux_edit=1` to the URL of a row page to get the edit view.
+
+Your database will be put into WAL mode, the one true mode.
 
 ### Extensibility
 
