@@ -1,105 +1,12 @@
 import sqlite3
 import time
 import json
-
-DUX_COLUMN_STATS = 'dux_column_stats'
-DUX_COLUMN_STATS_VALUES = 'dux_column_stats_values'
-
-CREATE_DUX_COLUMN_STATS = '''
-CREATE TABLE {}(
-  "table" text not null,
-  column text not null,
-  type text not null,
-  nullable boolean not null,
-  pk boolean not null,
-  min any,
-  max any,
-  count integer not null, -- count(*)
-  nulls integer not null, -- the output of COUNT(*) FILTER (WHERE TYPEOF(column) == 'null')
-  integers integer not null, -- as above, but integer
-  reals integer not null, -- as above, but real
-  texts integer not null, -- as above, but text
-  blobs integer not null, -- as above, but blob
-  jsons integer not null, -- sum(json_valid(column))
-  texts_min_length integer,
-  texts_max_length integer,
-  texts_whitespace integer not null, -- # of texts that have whitespace
-  texts_newline integer not null, -- # of texts that have a newline
-  blobs_min_length integer,
-  blobs_max_length integer,
-  primary key ("table", column)
-)
-'''.format(DUX_COLUMN_STATS).strip()
-
-CREATE_DUX_COLUMN_STATS_VALUES = '''
-CREATE TABLE {}(
-  "table" text not null,
-  "column" text not null,
-  value text,
-  count integer not null,
-  pks text, -- JSON array of pkeys that have this value
-  primary key ("table", "column", value)
-)
-'''.format(DUX_COLUMN_STATS_VALUES).strip()
+from .column_stats_schema import ensure_schema, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
 
 def escape_identifier(name):
     return '"{}"'.format(name)
 
-async def get_dux_column_stats_values_sql(db):
-    sql = list(await db.execute("SELECT sql FROM sqlite_master WHERE name = ?", [DUX_COLUMN_STATS_VALUES]))
-
-    if not sql:
-        return None
-
-    return sql[0][0]
-
-
-async def get_dux_column_stats_sql(db):
-    sql = list(await db.execute("SELECT sql FROM sqlite_master WHERE name = ?", [DUX_COLUMN_STATS]))
-
-    if not sql:
-        return None
-
-    return sql[0][0]
-
-async def create_dux_column_stats(db):
-    await db.execute_write(CREATE_DUX_COLUMN_STATS)
-
-async def create_dux_column_stats_values(db):
-    await db.execute_write(CREATE_DUX_COLUMN_STATS_VALUES)
-
-async def ensure_dux_column_stats_values(db):
-    old_schema = await get_dux_column_stats_values_sql(db)
-
-    if old_schema != CREATE_DUX_COLUMN_STATS_VALUES:
-        if old_schema:
-            await db.execute_write('DROP TABLE {}'.format(DUX_COLUMN_STATS_VALUES))
-
-        await create_dux_column_stats_values(db)
-
-        # sanity check: confirm it round trips
-        new_schema = await get_dux_column_stats_values_sql(db)
-
-        if new_schema != CREATE_DUX_COLUMN_STATS_VALUES:
-            raise Exception('datasette-ui-extras: unable to create {}'.format(DUX_COLUMN_STATS_VALUES))
-
-
 async def ensure_dux_column_stats(db):
-    await ensure_dux_column_stats_values(db)
-    sql = await get_dux_column_stats_sql(db)
-
-    if sql != CREATE_DUX_COLUMN_STATS:
-        if sql:
-            await db.execute_write('DROP TABLE {}'.format(DUX_COLUMN_STATS))
-
-        await create_dux_column_stats(db)
-
-        # sanity check: confirm it round trips
-        new_schema = await get_dux_column_stats_sql(db)
-
-        if new_schema != CREATE_DUX_COLUMN_STATS:
-            raise Exception('datasette-ui-extras: unable to create {}'.format(DUX_COLUMN_STATS))
-
     # For each table, for each column, ensure it exists.
     # Skip virtual tables and shadow tables associated with virtual tables.
     tables = [row[0] for row in list(await db.execute("select name from sqlite_master sm where type = 'table' and not sql like 'CREATE VIRTUAL TABLE%' and not exists(select 1 from sqlite_master sm2 where type = 'table' and sql like 'CREATE VIRTUAL TABLE%' and sm.name like sm2.name || '_%')"))]
@@ -284,7 +191,7 @@ async def compute_dux_column_stats(ds):
         if hasattr(db, 'engine') and db.engine == 'duckdb':
             continue
 
-        await ensure_dux_column_stats(db)
+        await ensure_schema(db)
 
 def autosuggest_column(conn, table, column, q):
     rows = conn.execute(

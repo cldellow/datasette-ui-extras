@@ -1,6 +1,6 @@
 from urllib.parse import urlparse, parse_qs
 from sqlglot import parse_one, exp
-from .column_stats import DUX_COLUMN_STATS
+from .column_stats_schema import DUX_COLUMN_STATS
 from .schema_utils import get_column_choices_from_check_constraints
 
 # Returns:
@@ -104,6 +104,7 @@ async def annotate_columns(rv, db, table_name):
 
     results = []
     try:
+        # TODO: this will need to look up by dux_ids
         results = list(await db.execute('SELECT * FROM {} WHERE "table" = ?'.format(DUX_COLUMN_STATS), [table_name]))
     except:
         return
