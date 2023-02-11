@@ -14,9 +14,6 @@ CREATE TABLE {}(
   pk boolean not null,
   min any,
   max any,
-  computed_at text not null default (datetime()),
-  "limit" integer, -- Was this based on SELECT *, or SELECT * LIMIT N ?
-  distinct_limit int not null, -- How many distinct examples were we willing to capture?
   count integer not null, -- count(*)
   nulls integer not null, -- the output of COUNT(*) FILTER (WHERE TYPEOF(column) == 'null')
   integers integer not null, -- as above, but integer
@@ -123,8 +120,8 @@ async def fetch_column_stats(db, table, column):
         return
 
     t = time.time()
-    limit = 1_000_000
-    distinct_limit = 1_000_000
+    limit = 1_000
+    distinct_limit = 1_000
     rows = list(await db.execute('select * from {} where "table" = ? and "column" = ?'.format(DUX_COLUMN_STATS), [table, column]))
 
     if rows:
@@ -258,8 +255,6 @@ LIMIT {}
         'type': type,
         'nullable': nullable,
         'pk': pk,
-        'limit': limit,
-        'distinct_limit': distinct_limit,
         'min': summary_stats['min'],
         'max': summary_stats['max'],
         'count': summary_stats['count'],
