@@ -35,14 +35,13 @@ async def row_edit_params_raw(datasette, request, database, table):
         return None
 
     # Ensure user has permission to update this row
-    visible, private = await datasette.check_visibility(
+    allowed = await datasette.permission_allowed(
         request.actor,
-        permissions=[
-            ("update-row", (database, table)),
-        ],
+        "update-row",
+        (database, table)
     )
 
-    if not visible:
+    if not allowed:
         return None
 
     rv = await get_editable_columns(datasette, request, database, table)
