@@ -361,8 +361,10 @@ FROM xs
 
 
 def autosuggest_column(conn, table, column, q):
+    # Consider max 100 things before sorting - gives generally good results, and is defensive
+    # against someone autocompleting the empty string
     raw_rows = conn.execute(
-        ('SELECT value, hash, count, pks FROM {} WHERE "table_id" = (SELECT id FROM dux_ids WHERE name = ?) AND "column_id" = (SELECT id FROM dux_ids WHERE name = ?) AND value >= ? AND value < ? || ' + "x'ff'" + '  ORDER BY count DESC LIMIT 10').format(DUX_COLUMN_STATS_VALUES),
+        ('WITH xs AS (SELECT value, hash, count, pks FROM {} WHERE "table_id" = (SELECT id FROM dux_ids WHERE name = ?) AND "column_id" = (SELECT id FROM dux_ids WHERE name = ?) AND value >= ? AND value < ? || ' + "x'ff'" + ' LIMIT 100) SELECT * FROM xs ORDER BY count DESC LIMIT 10').format(DUX_COLUMN_STATS_VALUES),
         [table, column, q.lower(), q.lower()]
     ).fetchall()
 
