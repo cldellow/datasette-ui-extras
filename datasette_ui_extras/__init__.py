@@ -102,23 +102,26 @@ def extra_js_urls(datasette):
 
 @datasette.hookimpl
 def render_cell(datasette, database, table, column, value):
-    if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
-        try:
-            tags = json.loads(value)
-            rv = ''
+    def inner():
+        if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
+            try:
+                tags = json.loads(value)
+                rv = ''
 
-            for i, tag in enumerate(tags):
-                if i > 0:
-                    rv += ', '
-                rv += markupsafe.Markup(
-                    '<span>{tag}</span>'.format(
-                        tag=markupsafe.escape(tag)
+                for i, tag in enumerate(tags):
+                    if i > 0:
+                        rv += ', '
+                    rv += markupsafe.Markup(
+                        '<span>{tag}</span>'.format(
+                            tag=markupsafe.escape(tag)
+                        )
                     )
-                )
 
-            return rv
-        except:
-            pass
+                return rv
+            except:
+                pass
+
+    return inner
 
 @datasette.hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
