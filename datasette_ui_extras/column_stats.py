@@ -64,12 +64,17 @@ async def ensure_empty_rows_for_db(db):
     #
     # Checking existence of rows gets us to 160ms -- still, doing this intelligently in batch
     # would be good.
+
+    known_tables = {}
     tables = await indexable_tables(db)
     for table in tables:
         table_id = await ensure_id(db, table)
         columns = await indexable_columns(db, table)
+        column_ids = []
+        known_tables[table_id] = column_ids
         for column in columns:
             column_id = await ensure_id(db, column)
+            column_ids.append(column_id)
 
             column_info = list(await db.execute('select type, "notnull", pk from pragma_table_info(?) where name = ?', [table, column]))
             if not column_info:
@@ -89,6 +94,12 @@ async def ensure_empty_rows_for_db(db):
                     'INSERT INTO dux_column_stats(table_id, column_id, type, nullable, pk) SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS(SELECT * FROM dux_column_stats WHERE table_id = ? AND column_id = ?)',
                    [table_id, column_id, type, nullable, pk, table_id, column_id]
                 )
+
+    known_table_ids = ', '.join([str(x) for x in known_tables.keys()])
+    if known_table_ids:
+        await db.execute_write('DELETE FROM dux_column_stats_ops WHERE NOT table_id IN ({})'.format(known_table_ids))
+        await db.execute_write('DELETE FROM dux_column_stats_values WHERE NOT table_id IN ({})'.format(known_table_ids))
+        await db.execute_write('DELETE FROM dux_column_stats WHERE NOT table_id IN ({})'.format(known_table_ids))
 
     # TODO: delete entries that are in dux_column_stats but no longer in columns
     # TODO: delete entries that are in dux_column_stats_values but no longer in columns
@@ -209,7 +220,11 @@ ORDER BY 3 DESC
 SELECT value, hash, count, (select json_group_array(value) from (select value from json_each(keys) limit 10)) AS keys
 FROM distincts
 '''.format(sql)
-    distincts = list(await db.execute(distincts_sql, where_args))
+
+    def read_fn(conn):
+        return conn.execute(distincts_sql, where_args).fetchall()
+    # NB: use execute_fn to avoid time limits
+    distincts = await db.execute_fn(read_fn)
 
     def fn(conn):
         for value, hash, count, pks in distincts:
@@ -250,7 +265,12 @@ ORDER BY 3 DESC
 SELECT value, hash, count, (select json_group_array(value) from (select value from json_each(keys) limit 10)) AS keys
 FROM distincts
 '''.format(sql)
-    distincts = list(await db.execute(json_distincts_sql, where_args))
+
+    def read_fn(conn):
+        return conn.execute(json_distincts_sql, where_args).fetchall()
+
+    # NB: use excute_fn to avoid time limits
+    distincts = await db.execute_fn(read_fn)
 
     def fn(conn):
         for value, hash, count, pks in distincts:
