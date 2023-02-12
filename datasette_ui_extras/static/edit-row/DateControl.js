@@ -81,42 +81,88 @@ window.DateControl = (function () {
   return class DateControl {
     constructor(initialValue, config) {
       this.config = config;
-      this.value_ = initialValue;
       this.initialValue = initialValue;
       this.dirty = false;
     }
 
     // Return a DOM element that will be shown to the user to edit this column's value
     createControl() {
-      this.el = document.createElement('input');
-      this.el.readOnly = true;
+      const dateInput = document.createElement('input');
+      dateInput.classList.add('dux-date-picker');
+      dateInput.readOnly = true;
+
+      if (this.config.nullable) {
+        this.el = document.createElement('div');
+        this.el.classList.add('dux-nullable-date-picker');
+
+        const notSetInput = document.createElement('input');
+        notSetInput.type = 'radio';
+        notSetInput.name = this.config.column;
+        notSetInput.id = notSetInput.name + '-null';
+        notSetInput.value = 'null';
+        if (this.initialValue == null) notSetInput.checked = true;
+        this.notSetInput = notSetInput;
+        notSetInput.addEventListener('change', () => this.dirty = true);
+        this.el.appendChild(notSetInput);
+
+        const notSetLabel = document.createElement('label');
+        notSetLabel.innerText = 'Not set';
+        notSetLabel.htmlFor = this.config.column + '-null';
+        this.el.appendChild(notSetLabel);
+
+        const setInput = document.createElement('input');
+        setInput.type = 'radio';
+        setInput.name = this.config.column;
+        setInput.value = 'set';
+        setInput.addEventListener('change', () => this.dirty = true);
+        this.el.appendChild(setInput);
+        if (this.initialValue !== null) setInput.checked = true;
+
+        dateInput.addEventListener('click', () => {
+          if (!setInput.checked) {
+            setInput.checked = true;
+            this.dirty = true;
+          }
+        });
+
+        this.el.appendChild(dateInput);
+
+      } else {
+        this.el = dateInput;
+      }
 
       const { year, month, day, hour, minute } = extract(this.initialValue || '');
-
-      const date = this.config.utc ? new Date(Date.UTC(year, month - 1, day, hour, minute)) : new Date(year, month - 1, day, hour, minute);
       const t = this.config.t ? 'T' : ' ';
       const z = this.config.utc ? 'Z' : '';
       const precision = this.config.precision;
 
+      const date = this.config.utc ? new Date(Date.UTC(year, month - 1, day, hour, minute)) : new Date(year, month - 1, day, hour, minute);
+      const format = (date) => {
+        if (precision === 'date')
+          // Date is special; ignore UTC flag
+          return strftime('%Y-%m-%d', date, false);
+
+        if (precision === 'millis')
+          return strftime(`%Y-%m-%d${t}%H:%M:00.000${z}`, date, this.config.utc);
+
+        if (precision === 'secs')
+          return strftime(`%Y-%m-%d${t}%H:%M:00${z}`, date, this.config.utc);
+
+        throw new Error(`unexpected precision: ${precision}`);
+      };
+
+      this.value_ = format(date);
+
       return [
         this.el,
         () => {
-          new AirDatepicker(this.el, {
+          new AirDatepicker(dateInput, {
             locale: USLocale,
             selectedDates: date,
             timepicker: precision !== 'date',
             onSelect: ({date}) => {
               this.dirty = true;
-
-              if (precision === 'date')
-                // Date is special; ignore UTC flag
-                return this.value_ = strftime('%Y-%m-%d', date, false);
-
-              if (precision === 'millis')
-                return this.value_ = strftime(`%Y-%m-%d${t}%H:%M:00.000${z}`, date, this.config.utc);
-
-              if (precision === 'secs')
-                return this.value_ = strftime(`%Y-%m-%d${t}%H:%M:00${z}`, date, this.config.utc);
+              this.value_ = format(date);
 
             }
           });
@@ -125,7 +171,14 @@ window.DateControl = (function () {
     }
 
     get value() {
-      return this.dirty ? this.value_ : this.initialValue;
+      if (this.dirty) {
+        if (this.notSetInput && this.notSetInput.checked)
+          return null;
+
+        return this.value_;
+      }
+
+      return this.initialValue;
     }
   }
 })();

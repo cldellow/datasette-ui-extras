@@ -31,10 +31,25 @@ body.row input, body.row textarea, body.row select {
   width: 80%;
 }
 
+body.row input.dux-date-picker {
+  width: 20em;
+}
+
+body.row form .dux-nullable-date-picker label {
+  font-weight: normal;
+  width: auto;
+}
+
 body.row input[type="checkbox"] {
   appearance: auto;
   width: 24px;
   height: 24px;
+}
+
+body.row input[type="radio"] {
+  appearance: auto;
+  width: initial;
+  height: initial;
 }
 
 body.row input:focus, body.row textarea:focus, body.row select:focus {
