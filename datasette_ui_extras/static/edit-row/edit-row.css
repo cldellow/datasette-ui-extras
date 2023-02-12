@@ -1,3 +1,8 @@
+/* Try to hide the Other links section */
+body.edit-row h2, body.edit-row h2 + ul {
+  display: none;
+}
+
 body.row .table-wrapper {
   overflow-x: initial;
 }
