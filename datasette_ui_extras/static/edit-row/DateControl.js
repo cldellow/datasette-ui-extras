@@ -88,6 +88,7 @@ window.DateControl = (function () {
     // Return a DOM element that will be shown to the user to edit this column's value
     createControl() {
       const dateInput = document.createElement('input');
+      dateInput.type = 'text';
       dateInput.classList.add('dux-date-picker');
       dateInput.readOnly = true;
 

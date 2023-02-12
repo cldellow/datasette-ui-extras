@@ -16,6 +16,7 @@ window.JSONTagsControl = class JSONTagsControl {
     this.div.appendChild(this.ul);
 
     const input = document.createElement('input');
+    input.type = 'text';
     this.div.appendChild(input);
     input.addEventListener('change', () => this.dirty = true);
 

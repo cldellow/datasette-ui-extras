@@ -20,7 +20,7 @@ body.row .awesomplete mark {
 }
 
 
-body.row input, body.row textarea, body.row select {
+body.row input[type=text], body.row textarea, body.row select {
   padding: 6px 12px;
   box-sizing: content-box;
   font-size: 16px;

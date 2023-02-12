@@ -10,6 +10,7 @@ window.StringAutocompleteControl = class StringAutocompleteControl {
   // Return a DOM element that will be shown to the user to edit this column's value
   createControl() {
     this.el = document.createElement('input');
+    this.el.type = 'text';
     this.el.value = this.initialValue;
 
     this.el.addEventListener('change', () => this.dirty = true);
