@@ -95,6 +95,8 @@ async def ensure_empty_rows_for_db(db):
                    [table_id, column_id, type, nullable, pk, table_id, column_id]
                 )
 
+    # Remove entries for tables that no longer exist
+    # Eventually we'll want to be able to do this online, but for now you have to restart.
     known_table_ids = ', '.join([str(x) for x in known_tables.keys()])
     if known_table_ids:
         await db.execute_write('DELETE FROM dux_column_stats_ops WHERE NOT table_id IN ({})'.format(known_table_ids))
