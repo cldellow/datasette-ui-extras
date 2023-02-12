@@ -254,6 +254,7 @@ def prepare_connection(conn):
     conn.enable_load_extension(False)
 
     # Try to set synchronous = NORMAL mode
+    conn.execute('PRAGMA journal_mode = WAL')
     conn.execute('PRAGMA synchronous = NORMAL')
 
 @datasette.hookimpl
