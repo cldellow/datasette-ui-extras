@@ -116,6 +116,13 @@ window.ShoutyControl = class ShoutyControl {
 - Adds an `edit-row.html` template which is used on row pages when `_dux_edit=1` is present.
     - This follows the [usual Datasette rules for custom templates](https://docs.datasette.io/en/stable/custom_templates.html#custom-templates), and can be overridden on a per-table basis, for example, `edit-row-mydatabase-mytable.html`.
 
+- Support for editing columns containing these data types:
+    - JSON arrays of strings
+    - Simple (i.e. not composite) foreign keys
+    - A closed list of strings or ints, declared via `CHECK (column IN ('option 1', 'option 2'))`
+    - Dates like `2023-01-01`
+    - Timestamps like `2023-01-01T01:02:03` and a few variations
+
 - Adds an `edit_control` hook that you can use to override which control should be rendered to edit a given `(database, table, column)` tuple.
 
 In progress, see the [Edit UI issue](https://github.com/cldellow/datasette-ui-extras/issues/48) for the roadmap.
