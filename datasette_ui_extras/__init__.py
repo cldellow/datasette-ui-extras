@@ -15,6 +15,7 @@ from .edit_controls import render_cell_edit_control
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
+from .utils import is_row_page
 from .column_stats_schema import DUX_IDS, DUX_COLUMN_STATS, DUX_COLUMN_STATS_OPS, DUX_COLUMN_STATS_VALUES
 from .column_stats import compute_dux_column_stats, autosuggest_column, start_column_stats_indexer
 
@@ -102,7 +103,32 @@ def extra_js_urls(datasette):
 
 @datasette.hookimpl
 def render_cell(datasette, database, table, column, value):
-    def inner():
+    async def inner():
+        task = asyncio.current_task()
+        request = None if not hasattr(task, '_duxui_request') else task._duxui_request
+
+        # Are we on the row page?
+        # This feels like quite a large hack!
+        if is_row_page(request):
+            db = datasette.databases[database]
+
+            # Is this column an fkey?
+            fkeys = list(await db.execute('SELECT "table", "to" FROM pragma_foreign_key_list(?) WHERE "from" = ?', [table, column]))
+
+            # We don't support compound foreign keys.
+            if len(fkeys) == 1:
+
+                other_table, other_column = fkeys[0]
+                label_column = await db.label_column_for_table(other_table)
+                the_other_row = list(await db.execute('SELECT "{}" FROM "{}" WHERE "{}" = ?'.format(label_column, other_table, other_column), [value]))
+                if the_other_row:
+                    return markupsafe.Markup(
+                        '<a href="{href}">{label}</a>'.format(
+                            href=datasette.urls.table(database, other_table) + '/' + str(value),
+                            label=markupsafe.escape(str(the_other_row[0][0]))
+                        )
+                    )
+
         if isinstance(value, str) and (value == '[]' or (value.startswith('["') and value.endswith('"]'))):
             try:
                 tags = json.loads(value)

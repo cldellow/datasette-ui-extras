@@ -5,7 +5,7 @@ from .hookspecs import hookimpl
 import datetime
 import re
 import json
-from .utils import row_edit_params
+from .utils import row_edit_params, is_row_page
 from .plugin import pm
 
 re_iso8601_date = re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
@@ -174,6 +174,9 @@ def render_cell_edit_control(datasette, database, table, column, row, value):
     async def inner():
         task = asyncio.current_task()
         request = None if not hasattr(task, '_duxui_request') else task._duxui_request
+
+        if not is_row_page(request):
+            return
 
         params = await row_edit_params(datasette, request, database, table)
         if params and column in params:

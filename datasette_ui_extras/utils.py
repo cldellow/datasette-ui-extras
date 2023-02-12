@@ -3,6 +3,10 @@ from sqlglot import parse_one, exp
 from .column_stats_schema import DUX_COLUMN_STATS, DUX_IDS
 from .schema_utils import get_column_choices_from_check_constraints
 
+def is_row_page(request):
+    # This feels like a giant hack!
+    return request and request.scope and request.scope['url_route'] and 'database' in request.scope['url_route']['kwargs'] and 'table' in request.scope['url_route']['kwargs'] and 'pks' in request.scope['url_route']['kwargs'] and True
+
 # Returns:
 # - None if the edit UI ought not be shown
 # - Information about which columns are editable
