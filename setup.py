@@ -35,7 +35,7 @@ setup(
     install_requires=["datasette>=1.0a0", "sqlglot"],
     extras_require={"test": ["pytest", "pytest-asyncio", "pytest-watch", "sqlite-utils"]},
     package_data={
-        "datasette_ui_extras": ["static/*", "static/edit-row/*", "templates/*"]
+        "datasette_ui_extras": ["static/*", "static/edit-row/*", "static/extensions/*", "templates/*"]
     },
     python_requires=">=3.7",
 )
