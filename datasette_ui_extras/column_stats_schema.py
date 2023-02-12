@@ -5,6 +5,8 @@ DUX_COLUMN_STATS_OPS = 'dux_column_stats_ops'
 DUX_COLUMN_STATS_VALUES = 'dux_column_stats_values'
 DUX_IDS = 'dux_ids'
 
+# This table should have reasonable defaults so we can insert new rows
+# without having knowledge about what stats are being collected.
 CREATE_DUX_COLUMN_STATS = '''
 CREATE TABLE {}(
   table_id integer not null references dux_ids(id),
@@ -14,19 +16,19 @@ CREATE TABLE {}(
   pk boolean not null,
   min any,
   max any,
-  count integer not null, -- count(*)
-  nulls integer not null, -- the output of COUNT(*) FILTER (WHERE TYPEOF(column) == 'null')
-  integers integer not null, -- as above, but integer
-  reals integer not null, -- as above, but real
-  texts integer not null, -- as above, but text
-  blobs integer not null, -- as above, but blob
-  jsons integer not null, -- sum(json_valid(column))
-  texts_min_length integer,
-  texts_max_length integer,
-  texts_whitespace integer not null, -- # of texts that have whitespace
-  texts_newline integer not null, -- # of texts that have a newline
-  blobs_min_length integer,
-  blobs_max_length integer,
+  count integer not null default 0, -- count(*)
+  nulls integer not null default 0, -- the output of COUNT(*) FILTER (WHERE TYPEOF(column) == 'null')
+  integers integer not null default 0, -- as above, but integer
+  reals integer not null default 0, -- as above, but real
+  texts integer not null default 0, -- as above, but text
+  blobs integer not null default 0, -- as above, but blob
+  jsons integer not null default 0, -- sum(json_valid(column))
+  texts_min_length integer default 0,
+  texts_max_length integer default 0,
+  texts_whitespace integer not null default 0, -- # of texts that have whitespace
+  texts_newline integer not null default 0, -- # of texts that have a newline
+  blobs_min_length integer default 0,
+  blobs_max_length integer default 0,
   primary key (table_id, column_id)
 )
 '''.format(DUX_COLUMN_STATS).strip()
@@ -46,16 +48,18 @@ CREATE TABLE {}(
 CREATE_DUX_IDS = '''
 CREATE TABLE {}(
   id integer primary key,
-  name text not null
+  name text not null unique
 )
 '''.format(DUX_IDS).strip()
 
 CREATE_DUX_COLUMN_STATS_OPS = '''
 CREATE TABLE {}(
-  table_id integer primary key REFERENCES dux_ids(id),
-  last_key text not null default '[]',
+  table_id integer REFERENCES dux_ids(id),
+  column_id integer REFERENCES dux_ids(id),
+  last_key text not null default '{{}}',
   pending integer not null check (pending in (0, 1)),
-  rows integer not null default 0
+  updated_at text not null default '1970-01-01 00:00:00Z',
+  primary key (table_id, column_id)
 )
 '''.format(DUX_COLUMN_STATS_OPS).strip()
 

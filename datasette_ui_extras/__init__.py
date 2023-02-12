@@ -1,5 +1,6 @@
 import json
 import os
+from functools import wraps
 import hashlib
 import datasette
 from datasette import Response
@@ -14,7 +15,7 @@ from .edit_controls import render_cell_edit_control
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
-from .column_stats import compute_dux_column_stats, autosuggest_column, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
+from .column_stats import compute_dux_column_stats, autosuggest_column, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES, start_column_stats_indexer
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -220,3 +221,19 @@ def prepare_connection(conn):
     conn.execute("SELECT load_extension(?)", [crypto_so]).fetchone()
     conn.enable_load_extension(False)
 
+    # Try to set synchronous = NORMAL mode
+    conn.execute('PRAGMA synchronous = NORMAL')
+
+@datasette.hookimpl
+def asgi_wrapper(datasette):
+    def wrap_with_indexer(app):
+        @wraps(app)
+        async def handle_request(scope, receive, send):
+            if not hasattr(datasette, "_dux_column_stats_indexer"):
+                start_column_stats_indexer(datasette)
+            datasette._dux_column_stats_indexer = True
+            await app(scope, receive, send)
+
+        return handle_request
+
+    return wrap_with_indexer
