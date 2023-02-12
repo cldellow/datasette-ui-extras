@@ -15,7 +15,8 @@ from .edit_controls import render_cell_edit_control
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
-from .column_stats import compute_dux_column_stats, autosuggest_column, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES, start_column_stats_indexer
+from .column_stats_schema import DUX_IDS, DUX_COLUMN_STATS, DUX_COLUMN_STATS_OPS, DUX_COLUMN_STATS_VALUES
+from .column_stats import compute_dux_column_stats, autosuggest_column, start_column_stats_indexer
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -198,7 +199,9 @@ async def handle_autosuggest_column(datasette, request):
 def get_metadata(datasette, key, database, table):
     hide_tables = {
         'tables': {
+            DUX_IDS: { 'hidden': True },
             DUX_COLUMN_STATS: { 'hidden': True },
+            DUX_COLUMN_STATS_OPS: { 'hidden': True },
             DUX_COLUMN_STATS_VALUES: { 'hidden': True },
         }
     }
