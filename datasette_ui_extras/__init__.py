@@ -226,21 +226,23 @@ async def handle_autosuggest_column(datasette, request):
 
 @datasette.hookimpl
 def get_metadata(datasette, key, database, table):
-    hide_tables = {
-        'tables': {
-            DUX_IDS: { 'hidden': True },
-            DUX_COLUMN_STATS: { 'hidden': True },
-            DUX_COLUMN_STATS_OPS: { 'hidden': True },
-            DUX_COLUMN_STATS_VALUES: { 'hidden': True },
-        }
-    }
-
     rv = {
         'databases': {
         }
     }
 
     for db in datasette.databases.keys():
+        # NB: don't re-use this object across databases, it causes
+        # things to get mingled unexpectedly.
+        hide_tables = {
+            'tables': {
+                DUX_IDS: { 'hidden': True },
+                DUX_COLUMN_STATS: { 'hidden': True },
+                DUX_COLUMN_STATS_OPS: { 'hidden': True },
+                DUX_COLUMN_STATS_VALUES: { 'hidden': True },
+            }
+        }
+
         rv['databases'][db] = hide_tables
 
     return rv
