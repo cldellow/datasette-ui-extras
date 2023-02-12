@@ -361,13 +361,43 @@ FROM xs
 
 
 def autosuggest_column(conn, table, column, q):
-    rows = conn.execute(
-        'SELECT value, count, pks FROM {} WHERE "table" = ? AND "column" = ? AND lower(value) LIKE ? ORDER BY count DESC LIMIT 10'.format(DUX_COLUMN_STATS_VALUES),
-        [table, column, q.lower() + '%']
+    raw_rows = conn.execute(
+        ('SELECT value, hash, count, pks FROM {} WHERE "table_id" = (SELECT id FROM dux_ids WHERE name = ?) AND "column_id" = (SELECT id FROM dux_ids WHERE name = ?) AND value >= ? AND value < ? || ' + "x'ff'" + '  ORDER BY count DESC LIMIT 10').format(DUX_COLUMN_STATS_VALUES),
+        [table, column, q.lower(), q.lower()]
     ).fetchall()
 
-    return [{
-        'value': row['value'],
-        'count': row['count'],
-        'pks': None if not row['pks'] else json.loads(row['pks'])
-    } for row in rows]
+    # The value stored is just for indexing -- we need to fetch the actual value
+    # from the underlying table, by looking up the entries in `pks`.
+    rows = []
+    for value, hash, count, pks in raw_rows:
+        pks = json.loads(pks)
+        if not pks:
+            continue
+
+        pk = pks[0]
+        keys = list(pk.items())
+        rv = conn.execute(
+            '''
+WITH xs as (SELECT "{column}" AS value FROM "{table}" WHERE ({keys}) = ({key_bindings})),
+choices AS (SELECT json.value, substr(md5(json.value), 1, 8) as hash FROM xs, json_each(CASE WHEN json_valid(xs.value) AND json_type(xs.value) = 'array' THEN xs.value ELSE json_array(xs.value) END) AS json)
+SELECT value FROM choices WHERE hash = ?
+            '''.format(
+                column = column,
+                table = table,
+                keys = ', '.join([k[0] for k in keys]),
+                key_bindings = ', '.join(['?' for k in keys])
+            ),
+            [k[1] for k in keys] + [hash]
+        ).fetchone()
+
+        if not rv:
+            continue
+
+        rows.append({
+            'value': rv[0],
+            'count': count,
+            'pks': pks
+        })
+
+
+    return rows

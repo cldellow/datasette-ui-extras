@@ -1,6 +1,6 @@
 from urllib.parse import urlparse, parse_qs
 from sqlglot import parse_one, exp
-from .column_stats_schema import DUX_COLUMN_STATS
+from .column_stats_schema import DUX_COLUMN_STATS, DUX_IDS
 from .schema_utils import get_column_choices_from_check_constraints
 
 # Returns:
@@ -105,7 +105,7 @@ async def annotate_columns(rv, db, table_name):
     results = []
     try:
         # TODO: this will need to look up by dux_ids
-        results = list(await db.execute('SELECT * FROM {} WHERE "table" = ?'.format(DUX_COLUMN_STATS), [table_name]))
+        results = list(await db.execute('SELECT stats.*, ids.name AS column FROM dux_column_stats stats JOIN dux_ids ids ON ids.id = stats.column_id WHERE "table_id" = (SELECT id FROM dux_ids WHERE name = ?)', [table_name]))
     except:
         return
 
@@ -115,11 +115,15 @@ async def annotate_columns(rv, db, table_name):
             continue
 
         to_annotate = rv[column]
+        to_annotate['base_table'] = table_name
+
         for key in row.keys():
             if key == 'column':
                 continue
-            elif key == 'table':
-                to_annotate['base_table'] = row[key]
+            elif key == 'table_id' or key == 'column_id':
+                # Don't pass these through -- they're internal transient details, as dux_ids IDs aren't
+                # meaningful
+                pass
             else:
                 value = row[key]
                 if key == 'nullable':
