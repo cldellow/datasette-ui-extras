@@ -27,16 +27,13 @@ Install this plugin in the same environment as Datasette.
 You must be on Linux-x86, because we load the sqlean crypto library, and have
 only bothered to get it working for that platform. See [#69](https://github.com/cldellow/datasette-ui-extras/issues/69) for more info.
 
-`datasette-ui-extras` uses some modern features of SQL, supported only in
-newer versions of SQLite.
-
-You need at least version 3.25.0.
+`datasette-ui-extras` uses some modern features of SQL, so you'll need SQLite
+version 3.25.0 or newer.
 
 > **Note**
 >
-> If your operating system's version of SQLite does not meet these requirements,
-> consider using [pysqlite3-binary](https://github.com/coleifer/pysqlite3), which provides
-> a modern version of SQLite.
+> Need a newer SQLite? Try `pip install [pysqlite3-binary](https://github.com/coleifer/pysqlite3)`.
+> Datasette will then use the SQLite from this package, which is an up-to-date version.
 
 Features we use:
 
