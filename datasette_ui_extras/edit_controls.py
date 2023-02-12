@@ -82,6 +82,8 @@ def infer_format(metadata):
                 'utc': False
             }
 
+        return
+
     min = metadata['min']
     max = metadata['max']
 
