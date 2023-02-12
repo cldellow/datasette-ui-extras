@@ -40,9 +40,18 @@ body.row input.dux-date-picker {
   width: 20em;
 }
 
-body.row form .dux-nullable-date-picker label {
+body.row input.dux-fkey-picker {
+  width: 20em;
+}
+
+body.row form .dux-nullable-date-picker label, body.row form .dux-nullable-fkey-picker label {
   font-weight: normal;
   width: auto;
+  color: initial;
+}
+
+body.row .dux-nullable-fkey-picker .awesomplete {
+  display: inline;
 }
 
 body.row input[type="checkbox"] {

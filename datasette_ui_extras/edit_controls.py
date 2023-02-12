@@ -1,5 +1,6 @@
 import asyncio
 import datasette
+from datasette.utils import await_me_maybe
 import markupsafe
 from .hookspecs import hookimpl
 import datetime
@@ -33,22 +34,18 @@ numeric_types = [
     'float',
 ]
 
-# In general, hooks higher in this file run after hooks lower than
-# them.
 
 @hookimpl(trylast=True, specname='edit_control')
 def string_control(datasette, database, table, column):
     return 'StringAutocompleteControl'
     #return 'StringControl'
 
-@hookimpl(specname='edit_control')
-def number_control(metadata):
+def number_control(datasette, database, table, column, row, value, metadata):
     type = metadata['type']
     if type.lower() in numeric_types:
         return 'NumberControl'
 
-@hookimpl(specname='edit_control')
-def boolean_control(metadata):
+def boolean_control(datasette, database, table, column, row, value, metadata):
     type = metadata['type']
 
     is_boolean = type.lower() == 'boolean'
@@ -123,8 +120,7 @@ def infer_format(metadata):
             't': min_t
         }
 
-@hookimpl(specname='edit_control')
-def date_control(metadata, value):
+def date_control(datasette, database, table, column, row, value, metadata):
     # Use cases:
     # 1. type == DATE and no data: DATE
     # 2. strings that looks like date: DATE
@@ -137,20 +133,38 @@ def date_control(metadata, value):
     if format:
         return 'DateControl', format
 
-@hookimpl(specname='edit_control')
-def textarea_control(metadata):
+def foreign_key_control(datasette, database, table, column, row, value, metadata):
+    async def inner():
+        db = datasette.databases[database]
+        # Is this column an fkey?
+        fkeys = list(await db.execute('SELECT "table", "to" FROM pragma_foreign_key_list(?) WHERE "from" = ?', [table, column]))
+
+        # We don't support compound foreign keys.
+        if len(fkeys) == 1:
+            other_table, other_column = fkeys[0]
+            label_column = await db.label_column_for_table(other_table)
+            the_other_row = list(await db.execute('SELECT "{}" FROM "{}" WHERE "{}" = ?'.format(label_column, other_table, other_column), [value]))
+            return 'ForeignKeyControl', {
+                'other_autosuggest_column_url': '{}/-/dux-autosuggest-column'.format(datasette.urls.table(database, other_table)),
+                'other_table': other_table,
+                'other_column': other_column,
+                'label_column': label_column,
+                'initial_label': the_other_row[0][0] if the_other_row else None
+            }
+
+    return inner
+
+def textarea_control(datasette, database, table, column, row, value, metadata):
     if 'texts_newline' in metadata and metadata['texts_newline']:
         return 'TextareaControl'
 
-@hookimpl(specname='edit_control')
-def dropdown_control(metadata):
+def dropdown_control(datasette, database, table, column, row, value, metadata):
     if not 'check_choices' in metadata:
         return
 
     return 'DropdownControl', { 'choices': [{ 'value': x, 'label': x } for x in metadata['check_choices']] }
 
-@hookimpl(specname='edit_control')
-def json_tags_control(metadata):
+def json_tags_control(datasette, database, table, column, row, value, metadata):
     if 'jsons' in metadata and metadata['jsons'] + metadata['nulls'] == metadata['count']:
         try:
             min_parsed = json.loads(metadata['min'])
@@ -168,6 +182,33 @@ def json_tags_control(metadata):
             return 'JSONTagsControl'
         except:
             return
+
+# Conceptually, it'd be nice if we just added hooks with relative priorities,
+# but pluggy doesn't permit explicit priorities beyond tryfirst/trylast.
+#
+# Add hooks here in decreasing order of specificity
+explicit_hook_order = [
+    json_tags_control,
+    dropdown_control,
+    foreign_key_control,
+    date_control,
+    textarea_control,
+    boolean_control,
+    number_control,
+    # string_control, # string_control is a trylast, so we ignore it
+]
+
+@hookimpl(specname='edit_control')
+def meta_edit_control(datasette, database, table, column, row, value, metadata):
+    async def inner():
+        for hook in explicit_hook_order:
+            rv = await await_me_maybe(hook(datasette, database, table, column, row, value, metadata))
+
+            if rv:
+                return rv
+
+    return inner
+
 
 @datasette.hookimpl(tryfirst=True, specname='render_cell')
 def render_cell_edit_control(datasette, database, table, column, row, value):
@@ -189,13 +230,20 @@ def render_cell_edit_control(datasette, database, table, column, row, value):
 
             if default_value:
                 default_value_value = list(await db.execute("SELECT {}".format(default_value)))[0][0]
-            control = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, row=row, value=value, metadata=data)
+
+            controls = pm.hook.edit_control(datasette=datasette, database=database, table=table, column=column, row=row, value=value, metadata=data)
+            control = None
+            for maybe in controls:
+                control = await await_me_maybe(maybe)
+                if control:
+                    break
+
             if control:
                 config = {}
 
                 if isinstance(control, tuple):
                     for k, v in control[1].items():
-                        config[k] = v
+                        config[to_camel_case(k)] = v
                     control = control[0]
 
                 for k, v in data.items():
