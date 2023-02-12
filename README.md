@@ -132,20 +132,25 @@ chrome.
 - Tables have sticky headers so you can keep track of columns while
   scrolling big data sets.
 
-- Facets are rendered in a sidebar, lazy loaded after your core
-  table has been shown.
+- Facets:
+    - Facets are rendered in a sidebar, lazy loaded after your core
+      table has been shown.
+    - New facet types:
+        - facet by year (`2022`)
+        - facet by year/month (`2022-10`)
+        - statistical summary (min, median, p90, p95, p99, max)
+    - Suggested facets: We no longer suggest facets. Instead, use the cog menu
+      on the column to add facets.
 
-- The human description for '=' and '!=' against a column that is a
-  foreign key includes the label of the foreign row.
 
-- New facet types:
-    - facet by year (`2022`)
-    - facet by year/month (`2022-10`)
-    - statistical summary (min, median, p90, p95, p99, max)
+- Foreign keys:
+    - The human description for '=' and '!=' against a column that is a
+      foreign key includes the label of the foreign row.
+    - The row page shows the label of foreign key values.
 
 - Pressing `/` focuses the search box.
 
-- When viewing a single entry's page, we render the data as a vertical
+- When viewing a single row's page, we render the data as a vertical
   column, with one attribute per row.
 
 - Mobile column options: Click the column name to see the column options, for sorting and faceting.
@@ -160,9 +165,6 @@ chrome.
 - Advanced export: This control is hidden by default. Click the `(Advanced)` link to see it.
 
 - Filters: These controls are hidden by default. Click the funnel icon to see them.
-
-- Suggested facets: We no longer suggest facets. Instead, use the cog menu
-  on the column to add facets.
 
 - Table/view definitions: These are hidden.
 
