@@ -69,3 +69,38 @@
 
   addEventListener('DOMContentLoaded', initialize);
 })();
+
+// Add an "Edit row" button on the regular row page
+(function() {
+  function initialize() {
+    // Only run on the row page, not the edit-row page
+    if (!document.body.classList.contains('row') || document.body.classList.contains('edit-row'))
+      return;
+
+    // TODO: check if user has update-row permission; maybe we embed
+    //       some _dux_permissions constants via a extra_body_script?
+    if (!__dux_permissions['update-row'])
+      return;
+
+    const h1 = document.querySelector('h1');
+
+    if (!h1)
+      return;
+
+    const form = document.createElement('form');
+    const button = document.createElement('input');
+    button.type = 'submit';
+    button.value = 'Edit data';
+    form.appendChild(button);
+    h1.after(form);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const url = new URL(window.location.href);
+      url.searchParams.append('_dux_edit', '1');
+      window.location = url.toString();
+    });
+  }
+
+  addEventListener('DOMContentLoaded', initialize);
+})();

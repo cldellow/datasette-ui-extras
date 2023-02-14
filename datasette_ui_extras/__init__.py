@@ -151,7 +151,41 @@ def render_cell(datasette, database, table, column, value):
 
 @datasette.hookimpl
 def extra_body_script(template, database, table, columns, view_name, request, datasette):
-    return facets_extra_body_script(template, database, table, columns, view_name, request, datasette)
+    async def inner():
+        facets = facets_extra_body_script(template, database, table, columns, view_name, request, datasette) or ''
+
+        permissions = {}
+        if database and table:
+            for perm in ['insert-row', 'update-row', 'delete-row', 'drop-table']:
+                res = await datasette.permission_allowed(
+                    request.actor,
+                    perm,
+                    (database, table)
+                )
+
+                permissions[perm] = res == True
+
+        if database:
+            for perm in ['create-table']:
+                res = await datasette.permission_allowed(
+                    request.actor,
+                    perm,
+                    database
+                )
+
+                permissions[perm] = res == True
+
+        permissions = '''
+    __dux_permissions = {};
+    '''.format(json.dumps(permissions))
+
+        return '''
+    {}
+
+    {}
+    '''.format(facets, permissions)
+
+    return inner
 
 @datasette.hookimpl
 def startup(datasette):
