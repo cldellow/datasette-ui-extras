@@ -11,7 +11,7 @@ description: Learn about datasette-ui-extras' installation requirements.
     - We use modern features of SQL like the `JSON1` extension, [window functions (3.25.0)](https://sqlite.org/changes.html#version_3_25_0), and [row values (3.15.0)](https://sqlite.org/changes.html#version_3_15_0)
 
 {% callout title="Need a newer SQLite?" %}
-Try `pip install pysqlite3-binary]`.
+Try `pip install pysqlite3-binary`.
 
 Datasette will then use the SQLite from the [pysqlite3-binary](https://github.com/coleifer/pysqlite3) package, which is an up-to-date version.
 {% /callout %}
