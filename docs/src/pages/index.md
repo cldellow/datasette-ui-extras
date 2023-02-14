@@ -1,10 +1,10 @@
 ---
 title: Getting started
-pageTitle: CacheAdvance - Never miss the cache again.
-description: Cache every single thing your app could ever do ahead of time, so your code never even has to run at all.
+pageTitle: datasette-ui-extras - make Datasette even more awesome
+description: Add power-user search features and an edit UI to Datasette.
 ---
 
-Test an update2. Learn how to get CacheAdvance set up in your project in under thirty minutes or it's free. {% .lead %}
+`datasette-ui-extras` makes [Datasette](https://datasette.io/) even more awesome: it adds an edit UI and several power-user features for browsing your data. {% .lead %}
 
 {% quick-links %}
 

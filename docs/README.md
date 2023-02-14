@@ -1,33 +1,25 @@
 # Docs
 
-ALMOST ALL OF THE CONTENTS OF THIS FOLDER ARE SUBJECT TO LICENSE.MD.
-MOST OF THIS FOLDER IS _NOT_ APACHE-2.0 LICENSED.
-ONLY THE .md FILES IN THIS FOLDER ARE APACHE-2.0 LICENSED.
+> **NOTE**
+>
+> MOST OF THIS FOLDER IS _NOT_ APACHE-2.0 LICENSED.
+> SEE LICENSE.MD, WHICH GOVERNS EVERY NON .md FILE IN THIS
+> FOLDER AND ITS SUBFOLDERS.
 
 Syntax is a [Tailwind UI](https://tailwindui.com) site template built using [Tailwind CSS](https://tailwindcss.com) and [Next.js](https://nextjs.org).
 
-## Getting started
-
-To get started with this template, first install the npm dependencies:
+## Editing documentation
 
 ```bash
-npm install
-cp .env.example .env.local
+yarn install
+yarn dev
 ```
 
-Next, run the development server:
-
-```bash
-npm run dev
-```
-
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
-
-## Customizing
-
-You can start editing this template by modifying the files in the `/src` folder. The site will auto-update as you edit these files.
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
 
 ## Global search
+
+TODO: Can't apply for this until we have docs.
 
 By default this template uses [Algolia DocSearch](https://docsearch.algolia.com) for the global search. DocSearch is free for open-source projects, and you can sign up for an account on their website. Once your DocSearch account is ready, update the following [environment variables](https://nextjs.org/docs/basic-features/environment-variables) in your project with the values provided by Algolia:
 
@@ -41,12 +33,5 @@ NEXT_PUBLIC_DOCSEARCH_INDEX_NAME=
 
 This site template is a commercial product and is licensed under the [Tailwind UI license](https://tailwindui.com/license).
 
-## Learn more
-
-To learn more about the technologies used in this site template, see the following resources:
-
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Headless UI](https://headlessui.dev) - the official Headless UI documentation
-- [Markdoc](https://markdoc.io) - the official Markdoc documentation
-- [DocSearch](https://docsearch.algolia.com) - the official DocSearch documentation
+The license is a bit confusing about how it can be used in open source. I believe this use is OK, see https://discord.com/channels/674983035946663957/1056206923835379773/1058138762091188345
+for comments by Adam Wathan. Happy to hide the source if needed.
