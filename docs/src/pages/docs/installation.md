@@ -28,5 +28,5 @@ sqlite3 mydatabase.db "pragma journal_mode = wal"
 ```
 
 WAL mode with `NORMAL` is recommended by the SQLite developers. It is faster
-and supports more concurrency than the default settings. It is not the defaul
-to their long-standing commitment to backwards compatibility.
+and supports more concurrency than the default settings. It is not the default
+due to their long-standing commitment to backwards compatibility.

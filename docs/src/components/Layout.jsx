@@ -35,6 +35,7 @@ const navigation = [
       },
     ],
   },
+  /*
   {
     title: 'Use case guides',
     links: [
@@ -43,10 +44,12 @@ const navigation = [
       { title: 'Form mode', href: '/docs/form-mode' },
     ],
   },
+  */
   {
     title: 'API reference',
     links: [
       { title: 'Hooks', href: '/docs/hooks' },
+      { title: 'Custom edit controls', href: '/docs/custom-edit-controls' },
       { title: 'Built-in edit controls', href: '/docs/built-in-edit-controls' },
       { title: 'Endpoints', href: '/docs/endpoints' },
     ],
