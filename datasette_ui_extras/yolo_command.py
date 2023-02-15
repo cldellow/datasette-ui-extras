@@ -26,9 +26,13 @@ def yolo_command(cli):
 
         # Second, ensure there is a metadata.json that is permissive
         metadata = {}
+        indent = 4
         try:
             f = open('metadata.json', 'r')
-            metadata = json.loads(f.read())
+            raw_json = f.read()
+            metadata = json.loads(raw_json)
+            if not '    ' in raw_json:
+                indent = 2
             f.close()
         except FileNotFoundError:
             pass
@@ -41,7 +45,7 @@ def yolo_command(cli):
 
 
         f = open('metadata.json', 'w')
-        f.write(json.dumps(metadata, indent=2))
+        f.write(json.dumps(metadata, indent=indent))
         f.close()
 
 def enable_yolo_for_metadata(metadata, db):
