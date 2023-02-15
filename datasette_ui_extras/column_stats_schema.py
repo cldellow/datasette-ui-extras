@@ -22,7 +22,9 @@ CREATE TABLE {}(
   reals integer not null default 0, -- as above, but real
   texts integer not null default 0, -- as above, but text
   blobs integer not null default 0, -- as above, but blob
-  jsons integer not null default 0, -- sum(json_valid(column))
+  json_strings integer not null default 0, -- sum(json_valid(column) and json_type(column) = 'text')
+  json_arrays integer not null default 0, -- sum(json_valid(column) and json_type(column) = 'array')
+  json_objects integer not null default 0, -- sum(json_valid(column) and json_type(column) = 'object')
   texts_min_length integer default 0,
   texts_max_length integer default 0,
   texts_whitespace integer not null default 0, -- # of texts that have whitespace

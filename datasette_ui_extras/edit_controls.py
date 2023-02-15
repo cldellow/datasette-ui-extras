@@ -165,7 +165,7 @@ def dropdown_control(datasette, database, table, column, row, value, metadata):
     return 'DropdownControl', { 'choices': [{ 'value': x, 'label': x } for x in metadata['check_choices']] }
 
 def json_tags_control(datasette, database, table, column, row, value, metadata):
-    if 'jsons' in metadata and metadata['jsons'] + metadata['nulls'] == metadata['count']:
+    if 'json_arrays' in metadata and metadata['json_arrays'] + metadata['nulls'] == metadata['count']:
         try:
             min_parsed = json.loads(metadata['min'])
             max_parsed = json.loads(metadata['max'])
