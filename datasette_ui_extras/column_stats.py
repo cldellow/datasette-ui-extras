@@ -53,43 +53,68 @@ async def ensure_id(db, identifier):
 
         return await ensure_id(db, identifier)
 
-async def ensure_empty_rows_for_db(db):
-    # TODO: I think this is quite slow - we're _always_ doing write transactions, even
-    # if the rows already exist.
-    #
-    # Also, we're not batching the ensure_id calls.
-    #
-    # e.g. on geonames, cooking, superuser this takes 400-500ms. I feel like 10ms would
-    # be more reasonable?
-    #
-    # Checking existence of rows gets us to 160ms -- still, doing this intelligently in batch
-    # would be good.
+async def ensure_ids(db, ids, needles): 
+    missing = []
+    for needle in list(set(needles)):
+        if not needle in ids:
+            missing.append(needle)
 
+    if not missing:
+        return
+
+    for name in missing:
+        ids[name] = await ensure_id(db, name)
+
+async def ensure_empty_rows_for_db(db):
     known_tables = {}
     tables = await indexable_tables(db)
+
+    ids = {}
+    all_ids = await db.execute('SELECT id, name FROM dux_ids')
+    for row in all_ids:
+        ids[row['name']] = row['id']
+
+    known_ops_raw = list(await db.execute('SELECT table_id, column_id FROM dux_column_stats_ops'))
+    known_ops = {}
+    for table_id, column_id in known_ops_raw:
+        known_ops[(table_id, column_id)] = True
+
+    known_stats_raw = list(await db.execute('SELECT table_id, column_id FROM dux_column_stats'))
+    known_stats = {}
+    for table_id, column_id in known_stats_raw:
+        known_stats[(table_id, column_id)] = True
+
+    await ensure_ids(db, ids, tables)
     for table in tables:
-        table_id = await ensure_id(db, table)
+        table_id = ids[table]
         columns = await indexable_columns(db, table)
+        await ensure_ids(db, ids, columns)
         column_ids = []
         known_tables[table_id] = column_ids
+
+        column_infos = list(await db.execute('select name, type, "notnull", pk from pragma_table_info(?)', [table]))
+        column_info_by_name = {}
+        for column_info in column_infos:
+            column_info_by_name[column_info['name']] = column_info
+
         for column in columns:
-            column_id = await ensure_id(db, column)
+            column_id = ids[column]
             column_ids.append(column_id)
 
-            column_info = list(await db.execute('select type, "notnull", pk from pragma_table_info(?) where name = ?', [table, column]))
+            column_info = column_info_by_name.get(column, None)
             if not column_info:
                 continue
 
-            type, notnull, pk = column_info[0]
+            column, type, notnull, pk = column_info
             nullable = notnull == 0
 
-            if not list(await db.execute('SELECT 1 FROM dux_column_stats_ops WHERE table_id = ? AND column_id = ?', [table_id, column_id])):
+            if not (table_id, column_id) in known_ops:
                 await db.execute_write(
                     'INSERT INTO dux_column_stats_ops(table_id, column_id, pending) SELECT ?, ?, 1 WHERE NOT EXISTS(SELECT * FROM dux_column_stats_ops WHERE table_id = ? AND column_id = ?)',
                    [table_id, column_id, table_id, column_id]
                 )
 
-            if not list(await db.execute('SELECT 1 FROM dux_column_stats WHERE table_id = ? AND column_id = ?', [table_id, column_id])):
+            if not (table_id, column_id) in known_stats:
                 await db.execute_write(
                     'INSERT INTO dux_column_stats(table_id, column_id, type, nullable, pk) SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS(SELECT * FROM dux_column_stats WHERE table_id = ? AND column_id = ?)',
                    [table_id, column_id, type, nullable, pk, table_id, column_id]
