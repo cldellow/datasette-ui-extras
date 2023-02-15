@@ -4,6 +4,7 @@ from functools import wraps
 import hashlib
 import datasette
 from datasette import Response
+from datasette.utils import await_me_maybe
 import asyncio
 import markupsafe
 from urllib.parse import parse_qs
@@ -238,7 +239,8 @@ def register_routes():
                 content_type="text/javascript; charset=utf-8"
             )
         ),
-        (r"^/(?P<dbname>.*)/(?P<tablename>.*)/-/dux-autosuggest-column$", handle_autosuggest_column)
+        (r"^/(?P<dbname>.*)/(?P<tablename>.*)/-/dux-autosuggest-column$", handle_autosuggest_column),
+        (r"^/(?P<dbname>.*)/(?P<tablename>.*)/(?P<pkey>.*)/-/dux-redirect-after-edit$", handle_redirect_after_edit)
     ]
 
 async def handle_autosuggest_column(datasette, request):
@@ -257,6 +259,27 @@ async def handle_autosuggest_column(datasette, request):
     return Response.json(
         suggestions
     )
+
+async def handle_redirect_after_edit(datasette, request):
+    qs = parse_qs(request.query_string)
+
+    action = qs['action'][0]
+    dbname = request.url_vars["dbname"]
+    tablename = request.url_vars["tablename"]
+    pk = request.url_vars["pkey"]
+
+    # TODO: why is this not finding our hook?
+    redirects = pm.hook.redirect_after_edit(datasette=datasette, database=dbname, table=tablename, action=action, pk=pk)
+
+    for redirect in redirects:
+        rv = await await_me_maybe(redirect)
+
+        if rv:
+            return Response.json(
+                {'url': rv}
+            )
+
+    raise Exception('handle_redirect_after_edit failed to find redirect')
 
 @datasette.hookimpl
 def get_metadata(datasette, key, database, table):

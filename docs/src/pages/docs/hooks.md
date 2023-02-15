@@ -47,13 +47,13 @@ Your function can return:
 - a tuple of (string, dict) - to use the specified JavaScript class to render the control, and pass the dict of parameters to it as configuration
 - an awaitable function that returns one of the above values
 
-## `redirect_after_save`
+## `redirect_after_edit`
 
 This hook determines where a user is sent after creating, updating or deleting
 a row.
 
 ```python
-def redirect_after_save(
+def redirect_after_edit(
   datasette, # An instance of the Datasette class.
   database,  # The database name, e.g. "cooking"
   table,     # The table name, e.g. "posts"
@@ -73,9 +73,10 @@ You can customize this to create purpose-built workflows for editing:
 
 ```python
 from datasette_ui_extras import hookimpl
+from datasette.database import MultipleValues
 
 @hookimpl
-def redirect_after_save(datasette, database, table):
+def redirect_after_edit(datasette, database, table):
   async def inner():
     next_row = await datasette.databases[database].execute(
       'SELECT id FROM turker_queue LIMIT 1'
@@ -86,7 +87,7 @@ def redirect_after_save(datasette, database, table):
         datasette.urls.table(database, table),
         next_row.single_value()
       )
-    except datasette.database.MultipleValues:
+    except MultipleValues:
       return '/congratulations-no-more-work'
 
   if table == 'turker_queue':

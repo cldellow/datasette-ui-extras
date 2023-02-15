@@ -4,6 +4,10 @@
   async function onFormSubmit(e) {
     e.preventDefault();
 
+    const redirectAfterEditEndpoint = new URL(window.location.href);
+    redirectAfterEditEndpoint.pathname += '/-/dux-redirect-after-edit';
+    redirectAfterEditEndpoint.searchParams.set('action', 'update-row');
+
     const updateEndpoint = new URL(window.location.href);
     updateEndpoint.pathname += '/-/update';
 
@@ -13,21 +17,34 @@
     }
 
     try {
-      const response = await fetch(updateEndpoint.toString(), {
-          method: 'POST',
-          headers: {
-              'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-              update,
-          })
-      });
-      const data = await response.json();
-      if (!data.ok) {
-        alert(`Error: ${data.errors.join(', ')}`);
+      {
+        const response = await fetch(updateEndpoint.toString(), {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                update,
+            })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          alert(`Error: ${data.errors.join(', ')}`);
+          return;
+        }
       }
+
+      {
+        const redirectResponse = await fetch(redirectAfterEditEndpoint.toString(), {
+            method: 'GET',
+        });
+        const data = await redirectResponse.json();
+        window.location.href = data.url;
+      }
+
     } catch(e) {
-      alert(e);
+      console.error(e);
+      alert(`An error occurred while updating the row: ${JSON.stringify(e)}`);
     }
   }
 

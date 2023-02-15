@@ -267,3 +267,9 @@ def render_cell_edit_control(datasette, database, table, column, row, value):
                 )
 
     return inner
+
+@hookimpl(trylast=True)
+def redirect_after_edit(datasette, database, table, action, pk):
+    if action == 'delete-row':
+        return datasette.urls.table(database, table)
+    return '{}/{}'.format(datasette.urls.table(database, table), pk)

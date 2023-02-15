@@ -9,3 +9,8 @@ hookimpl = HookimplMarker("datasette_ui_extras")
 @hookspec()
 def edit_control(datasette, database, table, column, row, value, metadata):
     """Return the name of the edit control class to use, and optionally some configuration."""
+
+# This is also a firstresult=True hook.
+@hookspec()
+def redirect_after_edit(datasette, database, table, action, pk):
+    """Return the URL to redirect the user to after editing a row."""
