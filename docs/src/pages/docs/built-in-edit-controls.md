@@ -42,7 +42,7 @@ Renders an autocomplete box to pick a row from another table.
 Options:
 
 - `initialLabel` - the initial label to show
-- `otherAutosuggestColumnUrl` - the URL of the [autosuggest endpoint](http://localhost:3000/docs/endpoints#dux-autosuggest-column)
+- `otherAutosuggestColumnUrl` - the URL of the [autosuggest endpoint](/docs/endpoints#dux-autosuggest-column)
 - `labelColumn` - the column to autosuggest
 
 See [ForeignKeyControl](https://github.com/cldellow/datasette-ui-extras/blob/main/datasette_ui_extras/static/edit-row/ForeignKeyControl.js) on GitHub.
@@ -53,7 +53,7 @@ Renders a multiselect control to popular a JSON array of strings.
 
 Options:
 
-- `autosuggestColumnUrl` - the URL of the [autosuggest endpoint](http://localhost:3000/docs/endpoints#dux-autosuggest-column)
+- `autosuggestColumnUrl` - the URL of the [autosuggest endpoint](/docs/endpoints#dux-autosuggest-column)
 - `column` - the column to autosuggest
 
 See [JSONTagsControl](https://github.com/cldellow/datasette-ui-extras/blob/main/datasette_ui_extras/static/edit-row/JSONTagsControl.js) on GitHub.
