@@ -7,8 +7,9 @@ processes = []
 
 [build]
   [build.args]
-    NEXT_PUBLIC_EXAMPLE = "Value goes here"
-
+    NEXT_PUBLIC_DOCSEARCH_APP_ID = "MRNGETB7OK"
+    NEXT_PUBLIC_DOCSEARCH_API_KEY = "8811b59f0c77510865cea958d6d75c69"
+    NEXT_PUBLIC_DOCSEARCH_INDEX_NAME = "dux-cldellow"
 [env]
   PORT = "8080"
 
