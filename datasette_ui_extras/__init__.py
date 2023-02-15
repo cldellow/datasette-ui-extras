@@ -17,6 +17,7 @@ from .new_facets import StatsFacet, YearFacet, YearMonthFacet
 from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
 from .utils import is_row_page
+from .yolo_command import yolo_command
 from .column_stats_schema import DUX_IDS, DUX_COLUMN_STATS, DUX_COLUMN_STATS_OPS, DUX_COLUMN_STATS_VALUES
 from .column_stats import compute_dux_column_stats, autosuggest_column, start_column_stats_indexer
 
