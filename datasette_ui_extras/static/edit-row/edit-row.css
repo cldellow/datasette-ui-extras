@@ -19,6 +19,15 @@ body.row .awesomplete mark {
   background: initial;
 }
 
+body.row .btn-row-actions {
+  display: inline-block;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+
+body.row .btn-delete {
+  background-color: #ff3333;
+}
 
 body.row input[type=text], body.row textarea, body.row select {
   padding: 6px 12px;
