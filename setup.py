@@ -32,10 +32,10 @@ setup(
     version=VERSION,
     packages=["datasette_ui_extras"],
     entry_points={"datasette": ["ui_extras = datasette_ui_extras"]},
-    install_requires=["datasette>=1.0a0", "sqlglot"],
+    install_requires=["datasette>=1.0a0", "sqlglot", "sqlite_sqlean @ git+https://github.com/karlb/sqlite-sqlean"],
     extras_require={"test": ["pytest", "pytest-asyncio", "pytest-watch", "sqlite-utils"]},
     package_data={
-        "datasette_ui_extras": ["static/*", "static/edit-row/*", "static/extensions/*", "templates/*"]
+        "datasette_ui_extras": ["static/*", "static/edit-row/*", "templates/*"]
     },
     python_requires=">=3.7",
 )
