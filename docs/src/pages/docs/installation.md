@@ -5,8 +5,6 @@ description: Learn about datasette-ui-extras' installation requirements.
 
 ## Minimum requirements
 
-- Linux-x86
-    - See [issue #69](https://github.com/cldellow/datasette-ui-extras/issues/69). We use a pre-built binary of the [sqlean library](https://github.com/nalgeon/sqlean).
 - SQLite 3.25.0 or newer
     - We use modern features of SQL like the `JSON1` extension, [window functions (3.25.0)](https://sqlite.org/changes.html#version_3_25_0), and [row values (3.15.0)](https://sqlite.org/changes.html#version_3_15_0)
 
