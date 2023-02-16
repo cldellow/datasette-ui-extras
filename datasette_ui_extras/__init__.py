@@ -6,6 +6,7 @@ import datasette
 from datasette import Response
 from datasette.utils import await_me_maybe
 import asyncio
+import sqlite_sqlean
 import markupsafe
 from urllib.parse import parse_qs
 from .hookspecs import hookimpl
@@ -309,8 +310,7 @@ def get_metadata(datasette, key, database, table):
 def prepare_connection(conn):
     conn.enable_load_extension(True)
 
-    crypto_so = os.path.abspath(os.path.join(__file__, '..', 'static', 'extensions', 'crypto.so'))[:-3]
-    conn.execute("SELECT load_extension(?)", [crypto_so]).fetchone()
+    sqlite_sqlean.load(conn, 'crypto')
     conn.enable_load_extension(False)
 
     # Try to set synchronous = NORMAL mode
