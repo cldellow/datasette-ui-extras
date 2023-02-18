@@ -3,6 +3,7 @@ import sqlite3
 DUX_COLUMN_STATS = 'dux_column_stats'
 DUX_COLUMN_STATS_OPS = 'dux_column_stats_ops'
 DUX_COLUMN_STATS_VALUES = 'dux_column_stats_values'
+DUX_PENDING_ROWS = 'dux_pending_rows'
 DUX_IDS = 'dux_ids'
 
 # This table should have reasonable defaults so we can insert new rows
@@ -65,19 +66,109 @@ CREATE TABLE {}(
 )
 '''.format(DUX_COLUMN_STATS_OPS).strip()
 
+CREATE_DUX_PENDING_ROWS = '''
+CREATE TABLE {}(
+  id integer primary key,
+  "table" text not null,
+  the_rowid integer, -- for rowid tables, store the rowid
+  old text,
+  new text,
+  timestamp integer not null default (strftime('%Y-%m-%d %H:%M:%fZ'))
+)
+'''.format(DUX_PENDING_ROWS).strip()
+
 table_schemas = {
+    DUX_PENDING_ROWS: CREATE_DUX_PENDING_ROWS,
     DUX_IDS: CREATE_DUX_IDS,
     DUX_COLUMN_STATS_OPS: CREATE_DUX_COLUMN_STATS_OPS,
     DUX_COLUMN_STATS: CREATE_DUX_COLUMN_STATS,
-    DUX_COLUMN_STATS_VALUES: CREATE_DUX_COLUMN_STATS_VALUES
+    DUX_COLUMN_STATS_VALUES: CREATE_DUX_COLUMN_STATS_VALUES,
 }
 
-async def ensure_schema(db):
+async def ensure_schema_and_triggers(db):
     # We take a very brute force approach: if any table has the wrong schema,
     # we'll drop all the tables.
-    await db.execute_write_fn(ensure_schema_conn)
+    await db.execute_write_fn(ensure_schema_and_triggers_conn)
 
-def ensure_schema_conn(conn):
+def ensure_schema_and_triggers_conn(conn):
+    ensure_schema(conn)
+    ensure_triggers(conn)
+
+def ensure_triggers(conn):
+    tables = indexable_tables(conn)
+
+    actual_triggers = conn.execute("SELECT name, tbl_name, sql FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'dux_stats_%'")
+    actual_triggers = [(row[0], row[1], row[2]) for row in actual_triggers]
+
+    # We install 3 triggers: dux_stats_insert_<table>, dux_stats_update_<table>, dux_stats_delete_<table>
+    #
+    # We compute the expected set of triggers, compare it to the actual, and drop/create as needed.
+    expected_triggers = []
+    for table in tables:
+        is_rowid_table = True
+
+        if list(conn.execute('SELECT * FROM pragma_index_info(?)', [table])):
+            is_rowid_table = False
+
+        for name, tbl_name, sql in get_stats_triggers(conn, table, is_rowid_table):
+            expected_triggers.append((name, tbl_name, sql))
+
+    for actual in actual_triggers:
+        if not actual in expected_triggers:
+            conn.execute('DROP TRIGGER "{}"'.format(actual[0]))
+
+    for expected in expected_triggers:
+        if not expected in actual_triggers:
+            print(expected)
+            conn.execute(expected[2])
+
+def get_stats_triggers(conn, table, is_rowid_table):
+    columns = indexable_columns(conn, table)
+
+    def generate_json_object(prefix):
+        rv = ['json_object(']
+
+        sep = ''
+        for column in columns:
+            rv.append("{sep}'{column}', {prefix}.\"{column}\"".format(column=column, prefix=prefix, sep=sep))
+            sep = ', '
+
+        rv.append(')')
+
+        return ''.join(rv)
+
+    rv = []
+    for op in ['delete', 'insert', 'update']:
+        trigger_name = 'dux_stats_{}_{}'.format(op, table)
+        maybe_old = 'NULL'
+        maybe_new = 'NULL'
+
+        if op == 'delete' or op == 'update':
+            maybe_old = generate_json_object('old')
+
+        if op == 'insert' or op == 'update':
+            maybe_new = generate_json_object('new')
+
+        maybe_rowid = 'NULL'
+        if is_rowid_table and op == 'delete':
+            maybe_rowid = '"old".rowid'
+        elif is_rowid_table and op == 'insert':
+            maybe_rowid = '"new".rowid'
+        elif is_rowid_table and op == 'update':
+            maybe_rowid = '"old".rowid'
+
+        sql = '''
+CREATE TRIGGER "{trigger_name}" AFTER {op} ON "{table}" FOR EACH ROW
+BEGIN
+  INSERT INTO dux_pending_rows("table", "the_rowid", "old", "new") VALUES ('{table}', {maybe_rowid}, {maybe_old}, {maybe_new});
+END
+'''.format(trigger_name=trigger_name, op=op, table=table, maybe_rowid=maybe_rowid, maybe_old=maybe_old, maybe_new=maybe_new).strip()
+
+
+        rv.append((trigger_name, table, sql))
+    return rv
+
+def ensure_schema(conn):
     def get_sql(table):
         sql = conn.execute("SELECT sql FROM sqlite_master WHERE name = ?", [table]).fetchone()
 
@@ -106,3 +197,12 @@ def ensure_schema_conn(conn):
         if roundtrip != sql:
             raise Exception('failed to create sql for table {}\nexpected: {}\nactual: {}'.format(table, sql, roundtrip))
 
+# A table is indexable if:
+# - not a virtual table (eg fts_posts)
+# - not a suffix of a virtual table (eg, fts_posts_idx)
+# - not a dux_ table
+def indexable_tables(conn):
+    return [row[0] for row in conn.execute("select name from sqlite_master sm where type = 'table' and not sql like 'CREATE VIRTUAL TABLE%' and not name like 'dux_%' and not exists(select 1 from sqlite_master sm2 where type = 'table' and sql like 'CREATE VIRTUAL TABLE%' and sm.name like sm2.name || '_%')")]
+
+def indexable_columns(conn, table):
+    return [row[0] for row in conn.execute('select name from pragma_table_info(?)', [table])]

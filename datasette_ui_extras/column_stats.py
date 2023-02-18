@@ -2,20 +2,9 @@ import sqlite3
 import time
 import json
 import asyncio
-from .column_stats_schema import ensure_schema, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES
+from .column_stats_schema import ensure_schema_and_triggers, DUX_COLUMN_STATS, DUX_COLUMN_STATS_VALUES, indexable_tables, indexable_columns
 import traceback
 import sys
-
-# A table is indexable if:
-# - not a virtual table (eg fts_posts)
-# - not a suffix of a virtual table (eg, fts_posts_idx)
-# - not a dux_ table
-async def indexable_tables(db):
-    return [row[0] for row in list(await db.execute("select name from sqlite_master sm where type = 'table' and not sql like 'CREATE VIRTUAL TABLE%' and not name like 'dux_%' and not exists(select 1 from sqlite_master sm2 where type = 'table' and sql like 'CREATE VIRTUAL TABLE%' and sm.name like sm2.name || '_%')"))]
-
-async def indexable_columns(db, table):
-    columns = list(await db.execute('select name from pragma_table_info(?)', [table]))
-    return [row[0] for row in columns]
 
 async def compute_dux_column_stats(ds):
     t = time.time()
@@ -28,7 +17,7 @@ async def compute_dux_column_stats(ds):
         if hasattr(db, 'engine') and db.engine == 'duckdb':
             continue
 
-        await ensure_schema(db)
+        await ensure_schema_and_triggers(db)
         dbs_to_watch.append(db_name)
 
     ds._dux_dbs_to_index = dbs_to_watch
@@ -67,7 +56,7 @@ async def ensure_ids(db, ids, needles):
 
 async def ensure_empty_rows_for_db(db):
     known_tables = {}
-    tables = await indexable_tables(db)
+    tables = await db.execute_fn(indexable_tables)
 
     ids = {}
     all_ids = await db.execute('SELECT id, name FROM dux_ids')
@@ -87,7 +76,10 @@ async def ensure_empty_rows_for_db(db):
     await ensure_ids(db, ids, tables)
     for table in tables:
         table_id = ids[table]
-        columns = await indexable_columns(db, table)
+        def indexable_columns_for_table(conn):
+            return indexable_columns(conn, table)
+
+        columns = await db.execute_fn(indexable_columns_for_table)
         await ensure_ids(db, ids, columns)
         column_ids = []
         known_tables[table_id] = column_ids
@@ -165,7 +157,7 @@ async def index_db(db):
     next_row = list(await db.execute('select table_id, column_id, last_key, (select name from dux_ids ids where ids.id = ops.table_id) AS table_name, (select name from dux_ids ids where ids.id = ops.column_id) AS column_name, updated_at from dux_column_stats_ops ops where pending order by updated_at asc limit 1'))
 
     if not next_row:
-        return
+        return await index_pending_db(db)
 
     next_row = next_row[0]
     # print([x for x in next_row])
@@ -228,6 +220,245 @@ async def index_db(db):
     )
 
     return True
+
+def get_pk_columns(conn, table):
+    pks = list(conn.execute('select name from pragma_table_info(?) where pk', [table]))
+    pks = [row[0] for row in pks]
+    if not pks:
+        pks = ['rowid']
+
+    return pks
+
+async def index_pending_db(db):
+    next_row = list(await db.execute('select id, the_rowid, "table", "old", "new" from dux_pending_rows order by id limit 1'))
+
+    if not next_row:
+        return False
+
+    id, the_rowid, table, old, new = next_row[0]
+
+    old = json.loads(old or '{}')
+    new = json.loads(new or '{}')
+
+    def get_pk_columns_fn(conn):
+        return get_pk_columns(conn, table)
+
+    pk_columns = await db.execute_fn(get_pk_columns_fn)
+
+    # Diff old and new to determine what stats need to be updated.
+    changes = []
+
+    # The keys will be the same in each object, so enumerate the first non-empty object
+    for column in (old or new).keys():
+        if old and new:
+            if old[column] != new[column]:
+                changes.append(('delete', column, old[column]))
+                changes.append(('insert', column, new[column]))
+        elif old:
+            changes.append(('delete', column, old[column]))
+        elif new:
+            changes.append(('insert', column, new[column]))
+
+    stats_updates = []
+
+    # We don't support updating all the stats columns, for example, we can update counts,
+    # and we can update min/max when an addition sets a new min/max. But if we deleted
+    # a value that was a min/max, we can't know what the new min/max should be without
+    # scanning all the values, which we're not going to do.
+    for kind, column, value in changes:
+        # Try to mimic the SQL we use in the backfilling.
+        #
+        # Note: there is a semantic difference between:
+        # SELECT CASE WHEN json_valid(column) THEN json_type(column) == 'text' ELSE 0 END FROM table;
+        # and
+        # SELECT CASE WHEN json_valid('literal') THEN json_type('literal') == 'text' ELSE 0 END FROM table;
+        #
+        # In the former case, the json_type(...) is not evaluated eagerly. In the literal case,
+        # it is, meaning you will get a malformed JSON error.
+        #
+        # Instead, we do:
+        # SELECT json_type(CASE WHEN json_valid('literal') THEN 'literal' ELSE 0 END)
+        #
+        # This differs from the backfill SQL.
+        await db.execute_write('''
+UPDATE dux_column_stats
+SET
+  count = count + :delta,
+  nulls = CASE WHEN typeof(:value) == 'null' THEN nulls + :delta ELSE nulls END,
+  integers = CASE WHEN typeof(:value) == 'integer' THEN integers + :delta ELSE integers END,
+  reals = CASE WHEN typeof(:value) == 'real' THEN reals + :delta ELSE reals END,
+  blobs = CASE WHEN typeof(:value) == 'blob' THEN blobs + :delta ELSE blobs END,
+  texts = CASE WHEN typeof(:value) == 'text' THEN texts + :delta ELSE texts END,
+  json_strings = json_strings + CASE WHEN json_type(CASE WHEN json_valid(:value) THEN :value ELSE 0 END) = 'text' THEN :delta ELSE 0 END,
+  json_arrays = json_arrays + CASE WHEN json_type(CASE WHEN json_valid(:value) THEN :value ELSE 0 END) = 'array' THEN :delta ELSE 0 END,
+  json_objects = json_objects + CASE WHEN json_type(CASE WHEN json_valid(:value) THEN :value ELSE 0 END) = 'object' THEN :delta ELSE 0 END,
+  texts_whitespace = texts_whitespace + CASE WHEN typeof(:value) = 'text' AND :value LIKE '% %' THEN :delta ELSE 0 END,
+  texts_newline = texts_newline + CASE WHEN typeof(:value) = 'text' AND :value LIKE '%' || x'0a' || '%' THEN :delta ELSE 0 END,
+  texts_min_length = CASE WHEN typeof(:value) != 'text' OR :delta = -1 THEN texts_min_length
+    ELSE MIN(COALESCE(texts_min_length, length(:value)), length(:value)) END,
+  texts_max_length = CASE WHEN typeof(:value) != 'text' OR :delta = -1 THEN texts_max_length
+    ELSE MAX(COALESCE(texts_max_length, length(:value)), length(:value)) END,
+  blobs_min_length = CASE WHEN typeof(:value) != 'blob' OR :delta = -1 THEN blobs_min_length
+    ELSE MIN(COALESCE(blobs_min_length, length(:value)), length(:value)) END,
+  blobs_max_length = CASE WHEN typeof(:value) != 'blob' OR :delta = -1 THEN blobs_max_length
+    ELSE MAX(COALESCE(blobs_max_length, length(:value)), length(:value)) END,
+  min = CASE WHEN :delta = -1 OR typeof(:value) = 'blob' OR (typeof(:value) = 'text' AND LENGTH(:value) > 100) THEN min
+  ELSE min(coalesce(min, :value), :value) END,
+  max = CASE WHEN :delta = -1 OR typeof(:value) = 'blob' OR (typeof(:value) = 'text' AND LENGTH(:value) > 100) THEN max
+  ELSE max(coalesce(max, :value), :value) END
+
+WHERE
+  table_id = (SELECT id FROM dux_ids WHERE name = :table)
+  AND column_id = (SELECT id FROM dux_ids WHERE name = :column)
+''', {
+    'delta': 1 if kind == 'insert' else -1,
+    'table': table,
+    'column': column,
+    'value': value
+})
+        # Index the actual values, but only for strings, and only some strings.
+        # We don't index all string values - check if we should ignore this.
+        #
+        if isinstance(value, str):
+            items = [value]
+
+            try:
+                # If this is a JSON-serialized array of strings, use those strings instead.
+                maybe_items = json.loads(value)
+                if isinstance(maybe_items, list):
+                    items = maybe_items
+            except:
+                # Not a JSON array of strings.
+                pass
+
+
+
+            for item in items:
+                if is_ignored_string(item):
+                    continue
+
+                # Compute the string and hash values for the lookup key.
+                # This could be done in python, but I'm lazy.
+                value_key, hash_key = list(await db.execute('SELECT substr(lower(:value), 1, 20), substr(md5(:value), 1, 8)', { 'value': item }))[0]
+                #print('value_key={} hash_key={}'.format(value_key, hash_key))
+
+                where = '''
+table_id = (SELECT id FROM dux_ids WHERE name = :table)
+AND column_id = (SELECT id FROM dux_ids WHERE name = :column)
+AND value = :value_key
+AND hash = :hash_key
+'''
+
+                where_args = {
+                    'value_key': value_key,
+                    'hash_key': hash_key,
+                    'table': table,
+                    'column': column,
+                }
+
+                if kind == 'delete':
+                    # 1) Get the pkey for the old row
+                    pk = {}
+                    for pk_column in pk_columns:
+                        pk[pk_column] = the_rowid if pk_column == 'rowid' else old[pk_column]
+
+                    def do_delete(conn):
+
+
+                        old_row = list(conn.execute('SELECT count, pks FROM dux_column_stats_values WHERE {where}'.format(where = where), where_args))
+
+                        if not old_row:
+                            return
+
+                        old_row = old_row[0]
+                        # 4) Delete the entire row if count is now negative
+
+                        count, pks = old_row
+                        # 2) Decrement the count of old entries
+                        count -= 1
+                        # 3) Delete the old pkey from the list of pkeys
+                        pks = json.loads(pks)
+                        pks = [x for x in pks if x != pk]
+
+                        # 4) Delete the whole row if count <= 0.
+                        if count <= 0:
+                            conn.execute('DELETE FROM dux_column_stats_values WHERE {where}'.format(where=where), where_args)
+                        else:
+                            where_args['count'] = count
+                            where_args['pks'] = json.dumps(pks)
+                            conn.execute('UPDATE dux_column_stats_values SET count = :count, pks = :pks WHERE {where}'.format(where=where), where_args)
+
+                    await db.execute_write_fn(do_delete)
+                elif kind == 'insert':
+                    # 1) Get the pkey for the new row
+                    pk = {}
+                    for pk_column in pk_columns:
+                        pk[pk_column] = the_rowid if pk_column == 'rowid' else new[pk_column]
+
+                    # 2) Ensure there is a row with 0 count and empty pkey array
+                    def do_insert(conn):
+                        old_row = list(conn.execute('SELECT count, pks FROM dux_column_stats_values WHERE {where}'.format(where = where), where_args))
+
+                        count = 0
+                        pks = []
+                        if not old_row:
+                            # Insert the empty row
+                            where_args['count'] = 0
+                            where_args['pks'] = '[]'
+                            conn.execute('INSERT INTO dux_column_stats_values(table_id, column_id, value, hash, count, pks) VALUES ((SELECT id FROM dux_ids WHERE name = :table), (SELECT id FROM dux_ids WHERE name = :column), :value_key, :hash_key, :count, :pks)', where_args)
+
+                        else:
+                            old_row = old_row[0]
+                            # 4) Delete the entire row if count is now negative
+
+                            count, pks = old_row
+                            pks = json.loads(pks)
+
+                        count += 1
+                        pks = [x for x in pks if x != pk] + [pk]
+
+                        where_args['count'] = count
+                        where_args['pks'] = json.dumps(pks)
+                        conn.execute('UPDATE dux_column_stats_values SET count = :count, pks = :pks WHERE {where}'.format(where=where), where_args)
+
+
+                    await db.execute_write_fn(do_insert)
+                    # 3) Increment the coutn
+                    # 4) Insert the pkey
+
+
+    await db.execute_write('DELETE FROM dux_pending_rows WHERE id = :id', [id])
+
+
+
+    return False
+
+def is_ignored_string(value):
+    # from the SQL backfill code:
+    # WHERE typeof(value) == 'text' AND length(value) <= 100 and not (value >= '1800-01-01' and value <= '9999-12-31') and not value like 'http://%' and not value like 'https://%' and cast(cast(value as integer) as text) != value and not (value like '[%' and json_valid(value))
+    if not isinstance(value, str):
+        return False
+
+    if value >= '1800-01-01' and value <= '9999-12-31':
+        return True
+
+    if value.startswith('http://') or value.startswith('https://'):
+        return True
+
+    if value.startswith('['):
+        try:
+            json.loads(value)
+            return True
+        except:
+            pass
+
+    try:
+        int(value)
+        return True
+    except:
+        pass
+
+    return False
 
 async def update_distincts(db, table_id, column_id, sql, where_args):
     # Fetch and update distinct values

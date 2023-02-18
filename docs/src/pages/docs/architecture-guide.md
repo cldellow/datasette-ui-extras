@@ -98,7 +98,7 @@ etc.
 This lets the plugin quickly propose what sort of edit control might be appropriate
 for a given column.
 
-Browse an example [dux_column_stats](https://dux.fly.dev/cooking/dux_column_stats) here.
+Browse an example [dux_column_stats](https://dux.fly.dev/cooking/dux_column_stats) table here.
 
 ### `dux_column_stats_values`
 
@@ -107,4 +107,28 @@ string-like values.
 
 This lets us offer [per-column autosuggest](/docs/endpoints#dux-autosuggest-column).
 
-Browse an example [dux_column_stats_values](https://dux.fly.dev/cooking/dux_column_stats_values) here.
+Browse an example [dux_column_stats_values](https://dux.fly.dev/cooking/dux_column_stats_values) table here.
+
+### `dux_pending_rows`
+
+`dux_pending_rows` tracks rows that have been updated and need their columns' summary
+stats updated.
+
+Once we've finished the initial backfill of stats, we try to keep stats mostly
+up-to-date. To achieve this, every table gets an INSERT, UPDATE and DELETE trigger.
+The trigger creates a row in `dux_pending_rows` with a JSON object that represents
+the old and new values of the modified row.
+
+The background indexing thread consumes these rows and updates the stats columns.
+
+There are some caveats: we only do updates that can be completed in fixed time.
+For example, we can update counts, and expand the `min` and `max` values when
+a new value is smaller or larger than older values.
+
+However, deleting a row that previously contained the `min` or `max` value cannot
+be efficiently handled in fixed time. To know what the new `min` or `max` value
+should be, we'd need to scan all the rows of the table. Instead, we leave the
+old value in place. In practice, for the purposes for which we use stats, and
+the usage patterns of most databases, this works fine.
+
+Browse an example [dux_pending_rows](https://dux.fly.dev/cooking/dux_pending_rows) table here.
