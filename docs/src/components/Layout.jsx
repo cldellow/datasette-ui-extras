@@ -24,6 +24,7 @@ const navigation = [
     title: 'Configuration',
     links: [
       { title: 'Authentication, authorization, auditing', href: '/docs/authn-authz-auditing' },
+      { title: 'Command-line tools', href: '/docs/cli-tools' },
       {
         title: 'SQL schema support',
         href: '/docs/sql-schema',
