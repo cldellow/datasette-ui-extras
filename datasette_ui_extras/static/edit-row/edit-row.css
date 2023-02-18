@@ -104,3 +104,9 @@ body.row select {
   margin-right: 0.25em;
   margin-bottom: 0.5em;
 }
+
+body.table .form-insert-row {
+  display: inline-block;
+  margin-left: 0.5em;
+}
+

@@ -1,0 +1,11 @@
+{% extends "default:row.html" %}
+
+{% block body_class %}row edit-row insert-row db-{{ database|to_css_class }} table-{{ table|to_css_class }}{% endblock %}
+
+
+{% block content %}
+<form class='dux-edit-form'>
+    {{ super() }}
+    <input type='submit' value='Add row'>
+</form>
+{% endblock %}

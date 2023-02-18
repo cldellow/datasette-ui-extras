@@ -4,12 +4,14 @@
   async function onFormSubmit(e) {
     e.preventDefault();
 
-    const redirectAfterEditEndpoint = new URL(window.location.href);
-    redirectAfterEditEndpoint.pathname += '/-/dux-redirect-after-edit';
-    redirectAfterEditEndpoint.searchParams.set('action', 'update-row');
+    const isInsert = new URL(window.location.href).pathname.endsWith('/dux-insert');
 
     const updateEndpoint = new URL(window.location.href);
-    updateEndpoint.pathname += '/-/update';
+    if (isInsert) {
+      updateEndpoint.pathname = updateEndpoint.pathname.replace(/[/]dux-insert$/, '/-/insert');
+    } else {
+      updateEndpoint.pathname += '/-/update';
+    }
 
     const update = {};
     for (const [k, control] of Object.entries(controls)) {
@@ -17,24 +19,43 @@
     }
 
     try {
+      let writeResponse;
       {
         const response = await fetch(updateEndpoint.toString(), {
             method: 'POST',
             headers: {
                 'content-type': 'application/json'
             },
-            body: JSON.stringify({
+            body: JSON.stringify(
+              isInsert ? {
+                row: update
+              } : {
                 update,
             })
         });
-        const data = await response.json();
-        if (!data.ok) {
-          alert(`Error: ${data.errors.join(', ')}`);
+        writeResponse = await response.json();
+        if (!writeResponse.ok) {
+          alert(`Error: ${writeResponse.errors.join(', ')}`);
           return;
         }
       }
 
       {
+        const redirectAfterEditEndpoint = new URL(window.location.href);
+        if (isInsert) {
+          // TODO: do a poor man's job of figuring the pkey
+          const pks = [];
+          for (const pk of __dux_pks) {
+            pks.push(writeResponse.rows[0][pk]);
+          }
+          redirectAfterEditEndpoint.pathname = redirectAfterEditEndpoint.pathname.replace(/[/]dux-insert$/, `/${pks.join(',')}/-/dux-redirect-after-edit`);
+          redirectAfterEditEndpoint.searchParams.set('action', 'insert-row');
+        } else {
+          redirectAfterEditEndpoint.pathname += '/-/dux-redirect-after-edit';
+          redirectAfterEditEndpoint.searchParams.set('action', 'update-row');
+        }
+
+
         const redirectResponse = await fetch(redirectAfterEditEndpoint.toString(), {
             method: 'GET',
         });
@@ -44,7 +65,7 @@
 
     } catch(e) {
       console.error(e);
-      alert(`An error occurred while updating the row: ${JSON.stringify(e)}`);
+      alert(`An error occurred while inserting the row: ${JSON.stringify(e)}`);
     }
   }
 
@@ -100,7 +121,7 @@
     if (!document.body.classList.contains('edit-row') && __dux_permissions['update-row'])
       needsEdit = true;
 
-    if (__dux_permissions['delete-row'])
+    if (__dux_permissions['delete-row'] && !document.body.classList.contains('insert-row'))
       needsDelete = true;
 
     const h1 = document.querySelector('h1');
@@ -184,6 +205,44 @@
     }
 
 
+  }
+
+  addEventListener('DOMContentLoaded', initialize);
+})();
+
+// Add an "New row" button on the table page
+(function() {
+  function initialize() {
+    // Only run on the row page and edit-row pages
+    if (!document.body.classList.contains('table'))
+      return;
+
+    let needsInsert = false;
+
+    if (__dux_permissions['insert-row'])
+      needsInsert = true;
+
+    const h3 = document.querySelector('h3');
+
+    if (!h3)
+      return;
+
+    if (needsInsert) {
+      const form = document.createElement('form');
+      form.classList.add('form-insert-row');
+      const button = document.createElement('input');
+      button.type = 'submit';
+      button.value = 'Add row';
+      form.appendChild(button);
+      h3.appendChild(form);
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = new URL(window.location.href);
+        url.pathname = url.pathname + '/dux-insert';
+        window.location = url.toString();
+      });
+    }
   }
 
   addEventListener('DOMContentLoaded', initialize);

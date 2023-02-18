@@ -42,6 +42,8 @@ Most of our UI changes are achieved by self-contained JavaScript modules
 that run on the page. These modules sometimes need configuration information
 from the Python code. This information is passed via global variables:
 
+- `__dux_pks` is a list of the primary keys of the table, or `["rowid"]` if
+  no explicit primary key is set. This is set on the row page.
 - `__dux_permissions` is a map containing the set of permissions that
   the current user has. This is set on database, table and row pages.
 - `__dux_facet_suggestions` is a map suggesting candidate facets for each column.

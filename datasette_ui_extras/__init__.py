@@ -4,7 +4,7 @@ from functools import wraps
 import hashlib
 import datasette
 from datasette import Response
-from datasette.utils import await_me_maybe
+from datasette.utils import await_me_maybe, to_css_class
 import asyncio
 import sqlite_sqlean
 import markupsafe
@@ -157,6 +157,7 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     async def inner():
         facets = facets_extra_body_script(template, database, table, columns, view_name, request, datasette) or ''
 
+        dux_pks = ''
         permissions = {}
         if database and table:
             for perm in ['insert-row', 'update-row', 'delete-row', 'drop-table']:
@@ -178,6 +179,16 @@ def extra_body_script(template, database, table, columns, view_name, request, da
 
                 permissions[perm] = res == True
 
+        if view_name == 'row':
+            db = datasette.databases[database]
+
+            pks = list(await db.execute('SELECT name FROM pragma_table_info(?) WHERE pk', [table]))
+            pks = [r[0] for r in pks]
+            pks = pks if pks else ['rowid']
+
+            dux_pks = '__dux_pks = {};'.format(json.dumps(pks))
+
+
         permissions = '''
     __dux_permissions = {};
     '''.format(json.dumps(permissions))
@@ -186,7 +197,9 @@ def extra_body_script(template, database, table, columns, view_name, request, da
     {}
 
     {}
-    '''.format(facets, permissions)
+
+    {}
+    '''.format(dux_pks, facets, permissions)
 
     return inner
 

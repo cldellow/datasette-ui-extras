@@ -29,15 +29,18 @@ async def row_edit_params_raw(datasette, request, database, table):
 
     config = datasette.plugin_config('datasette-ui-extras', database=database)
 
+    is_insert = url.path.endswith('/dux-insert')
+
     metadata_edit_param = config and 'editable' in config and table in config['editable']
 
-    if not (dux_edit_param or metadata_edit_param):
+    if not (dux_edit_param or metadata_edit_param or is_insert):
         return None
 
+    permission_required = 'insert-row' if is_insert else 'update-row'
     # Ensure user has permission to update this row
     allowed = await datasette.permission_allowed(
         request.actor,
-        "update-row",
+        permission_required,
         (database, table)
     )
 

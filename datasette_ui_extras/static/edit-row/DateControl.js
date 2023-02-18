@@ -154,6 +154,12 @@ window.DateControl = (function () {
 
       this.value_ = format(date);
 
+      // In the insert-row case, default the initial value to a non-null value if
+      // the column is not nullable
+      if (!this.config.nullable && this.initialValue === null) {
+        this.initialValue = this.value_;
+      }
+
       return [
         this.el,
         () => {

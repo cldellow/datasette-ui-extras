@@ -119,7 +119,6 @@ def ensure_triggers(conn):
 
     for expected in expected_triggers:
         if not expected in actual_triggers:
-            print(expected)
             conn.execute(expected[2])
 
 def get_stats_triggers(conn, table, is_rowid_table):
