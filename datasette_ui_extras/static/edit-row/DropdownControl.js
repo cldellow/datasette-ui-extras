@@ -4,12 +4,19 @@ window.DropdownControl = class DropdownControl {
     this.initialValue = initialValue;
     this.el = null;
     this.dirty = false;
+
+    // In the insert-row case, default the initial value to a non-null value if
+    // the column is not nullable
+    if (!this.config.nullable && this.initialValue === null) {
+      this.initialValue = this.config.choices[0].value;
+    }
   }
 
   // Return a DOM element that will be shown to the user to edit this column's value
   createControl() {
     this.el = document.createElement('select');
     this.el.value = this.initialValue;
+
 
     const choices = [];
     if (this.config.nullable) {
