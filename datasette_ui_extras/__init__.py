@@ -314,9 +314,13 @@ def prepare_connection(conn):
     sqlite_sqlean.load(conn, 'crypto')
     conn.enable_load_extension(False)
 
-    # Try to set synchronous = NORMAL mode
+    # Try to enable WAL and synchronous = NORMAL mode
     conn.execute('PRAGMA journal_mode = WAL')
     conn.execute('PRAGMA synchronous = NORMAL')
+
+    # Foreign keys are great, databases should enforce them.
+    conn.execute('PRAGMA foreign_keys = ON')
+
 
 @datasette.hookimpl
 def asgi_wrapper(datasette):
