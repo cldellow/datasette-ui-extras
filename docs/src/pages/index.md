@@ -10,7 +10,7 @@ description: Add power-user search features and an edit UI to Datasette.
 
 {% quick-link title="Configuration" icon="installation" href="/docs/authn-authz-auditing" description="Learn how to configure and secure your installation." /%}
 
-{% commented-quick-link title="Use case guides" icon="theming" href="/docs/data-entry" description="Learn to easily customize and modify your app's visual design to fit your brand." /%}
+{% commented-quick-link title="Use case guides" icon="theming" href="/docs/data-entry" description="Learn how to implement common use cases, like data entry, turking and forms." /%}
 
 {% quick-link title="Plugins" icon="plugins" href="/docs/hooks" description="Extend the library with third-party plugins or write your own." /%}
 
