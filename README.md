@@ -3,6 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/datasette-ui-extras.svg)](https://pypi.org/project/datasette-ui-extras/)
 [![Changelog](https://img.shields.io/github/v/release/cldellow/datasette-ui-extras?include_prereleases&label=changelog)](https://github.com/cldellow/datasette-ui-extras/releases)
 [![Tests](https://github.com/cldellow/datasette-ui-extras/workflows/Test/badge.svg)](https://github.com/cldellow/datasette-ui-extras/actions?query=workflow%3ATest)
+[![codecov](https://codecov.io/gh/cldellow/datasette-ui-extras/branch/main/graph/badge.svg?token=QRV8VXYKTW)](https://codecov.io/gh/cldellow/datasette-ui-extras)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/cldellow/datasette-ui-extras/blob/main/LICENSE)
 
 This plugin aims to be a batteries-included theme that makes Datasette more like a self-hosted Airtable or Notion.
