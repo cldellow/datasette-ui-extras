@@ -5,8 +5,8 @@ description: Learn about datasette-ui-extras' installation requirements.
 
 ## Minimum requirements
 
-- SQLite 3.25.0 or newer
-    - We use modern features of SQL like the `JSON1` extension, [window functions (3.25.0)](https://sqlite.org/changes.html#version_3_25_0), and [row values (3.15.0)](https://sqlite.org/changes.html#version_3_15_0)
+- SQLite 3.27.0 or newer
+    - We use modern features of SQL like the `JSON1` extension, [`VACUUM INTO` (3.27.0)](https://sqlite.org/changes.html#version_3_27_0), [window functions (3.25.0)](https://sqlite.org/changes.html#version_3_25_0), and [row values (3.15.0)](https://sqlite.org/changes.html#version_3_15_0)
 
 {% callout title="Need a newer SQLite?" %}
 Try `pip install pysqlite3-binary`.
