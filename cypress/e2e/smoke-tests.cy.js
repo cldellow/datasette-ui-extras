@@ -34,6 +34,15 @@ describe('dux smoke tests', () => {
     cy.contains('p99')
   })
 
+  it('can render array facets', () => {
+    cy.visit('http://localhost:8888/diy/posts?_facet_array=tags')
+    cy.contains('tags (array)')
+  })
+
+  it('can filter by fkey and show label', () => {
+    cy.visit('http://localhost:8888/diy/posts?_sort=id&owner_user_id__exact=17')
+    cy.contains('where owner_user_id = 17 (Jeremy McGee)')
+  })
 
 
 })
