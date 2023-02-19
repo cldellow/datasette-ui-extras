@@ -39,15 +39,11 @@ jobs:
         pytest --cov=datasette_ui_extras --cov-config=.coveragerc --cov-report xml:coverage.xml --cov-report term
         ls -lah
         cp tests/diy-meta.db.orig diy.db
-        coverage run -m tests.e2e_test_host dux diy.db
-        coverage xml -o coverage-dux-cli.xml
+        coverage run --append -m tests.e2e_test_host dux diy.db
+        coverage run --append -m tests.e2e_test_host undux diy.db
+        coverage xml -o coverage.xml
     - name: Upload coverage report 1
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: coverage.xml
-    - name: Upload coverage report 2
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage-dux-cli.xml
