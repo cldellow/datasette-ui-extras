@@ -20,6 +20,12 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
+    - name: Set up Node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+    - name: Yarn install
+      run: yarn
     - uses: actions/cache@v2
       name: Configure pip caching
       with:
@@ -38,7 +44,16 @@ jobs:
         cat .coveragerc
         pytest --cov=datasette_ui_extras --cov-config=.coveragerc --cov-report xml:coverage.xml --cov-report term
         ls -lah
-    - name: Upload coverage report
+        cp tests/diy-meta.db.orig diy.db
+        coverage run --append -m tests.e2e_test_host dux diy.db
+        coverage run --append -m tests.e2e_test_host yolo diy.db
+        coverage run --append -m tests.e2e_test_host serve diy.db --metadata metadata.e2e.json --port 8888 &
+        ./node_modules/.bin/wait-on http://localhost:8888
+        ./node_modules/.bin/cypress run
+        kill %1
+        coverage run --append -m tests.e2e_test_host undux diy.db
+        coverage xml -o coverage.xml
+    - name: Upload coverage report 1
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

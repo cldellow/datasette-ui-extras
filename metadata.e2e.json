@@ -1,0 +1,18 @@
+{
+    "databases": {
+        "diy": {
+            "permissions": {
+                "create-table": true,
+                "drop-table": true,
+                "insert-row": true,
+                "update-row": true,
+                "delete-row": true
+            },
+            "tables": {
+                "users": {
+                    "label_column": "display_name"
+                }
+            }
+        }
+    }
+}
