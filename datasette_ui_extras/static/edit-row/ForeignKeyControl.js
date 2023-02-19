@@ -59,10 +59,7 @@ window.ForeignKeyControl = class ForeignKeyControl {
           list: []
         });
 
-        autosuggest.addEventListener('keyup', async (e) => {
-          if (e.key !== 'Backspace' && e.key.length !== 1) {
-            return;
-          }
+        autosuggest.addEventListener('input', async (e) => {
           const rv = await fetch(this.config.otherAutosuggestColumnUrl + '?' + new URLSearchParams({
             column: this.config.labelColumn,
             q: e.target.value,

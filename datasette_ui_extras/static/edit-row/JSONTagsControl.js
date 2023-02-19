@@ -80,9 +80,9 @@ window.JSONTagsControl = class JSONTagsControl {
               return;
             }
           }
-          if (e.key !== 'Backspace' && e.key.length !== 1) {
-            return;
-          }
+        })
+
+        input.addEventListener('input', async (e) => {
           const rv = await fetch(this.autosuggestColumnUrl + '?' + new URLSearchParams({
             column: this.column,
             q: e.target.value,

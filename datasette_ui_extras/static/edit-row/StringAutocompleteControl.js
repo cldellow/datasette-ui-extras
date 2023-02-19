@@ -27,10 +27,7 @@ window.StringAutocompleteControl = class StringAutocompleteControl {
           list: []
         });
 
-        this.el.addEventListener('keyup', async (e) => {
-          if (e.key !== 'Backspace' && e.key.length !== 1) {
-            return;
-          }
+        this.el.addEventListener('input', async (e) => {
           const rv = await fetch(this.autosuggestColumnUrl + '?' + new URLSearchParams({
             column: this.column,
             q: e.target.value,
