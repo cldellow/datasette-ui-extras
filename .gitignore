@@ -15,3 +15,4 @@ node_modules
 cypress/screenshots/
 cypress/videos/
 .coverage
+coverage.xml

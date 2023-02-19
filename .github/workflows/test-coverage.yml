@@ -40,6 +40,11 @@ jobs:
         ls -lah
         cp tests/diy-meta.db.orig diy.db
         coverage run --append -m tests.e2e_test_host dux diy.db
+        coverage run --append -m tests.e2e_test_host yolo diy.db
+        coverage run --append -m tests.e2e_test_host serve diy.db --metadata metadata.e2e.json --port 8888 &
+        ./node_modules/.bin/wait-on http://localhost:8888
+        ./node_modules/.bin/cypress run
+        kill %1
         coverage run --append -m tests.e2e_test_host undux diy.db
         coverage xml -o coverage.xml
     - name: Upload coverage report 1

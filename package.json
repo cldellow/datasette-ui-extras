@@ -7,6 +7,7 @@
   "author": "Colin Dellow <cldellow@gmail.com>",
   "license": "APACHE-2",
   "devDependencies": {
-    "cypress": "^12.6.0"
+    "cypress": "^12.6.0",
+    "wait-on": "^7.0.1"
   }
 }
