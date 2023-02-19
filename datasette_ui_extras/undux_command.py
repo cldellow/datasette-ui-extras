@@ -5,12 +5,12 @@ import json
 import os
 
 @hookimpl(specname='register_commands')
-def dedux_command(cli):
+def undux_command(cli):
     @cli.command()
     @click.argument(
         "files", type=click.Path(exists=True), nargs=-1
     )
-    def dedux(files):
+    def undux(files):
         "Remove datasette-ui-extras's triggers and stats tables from the given database(s)."
 
         for file in files:

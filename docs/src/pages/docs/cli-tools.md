@@ -3,17 +3,30 @@ title: Command-line tools
 description: Learn about datasette-ui-extras's CLI tools.
 ---
 
-## `dedux`
+## `dux`
 
 `datasette-ui-extras` needs to create various hidden tables and triggers to maintain
 statistics about your data. This allows us to offer autosuggest and schema-specific
 editing controls.
 
-If you no longer wish to use `datasette-ui-extras`, you can remove these additions by
-using the `dedux` tool.
+These will be created automatically for you when you start Datasette, assuming your
+database is mutable.
+
+If you want to publish a read-only database, but still benefit from the extra UI
+features of `datasette-ui-extras`, you can use the `dux` command to prepare your
+database:
 
 ```shell
-datasette dedux mydb.db
+datasette dux mydb.db
+```
+
+## `undux`
+
+If you no longer wish to use `datasette-ui-extras`, you can remove its hidden tables
+and statistics triggers by using the `undux` tool.
+
+```shell
+datasette undux mydb.db
 ```
 
 ## `yolo`

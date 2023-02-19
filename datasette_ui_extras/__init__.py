@@ -6,7 +6,6 @@ import datasette
 from datasette import Response
 from datasette.utils import await_me_maybe, to_css_class
 import asyncio
-import sqlite_sqlean
 import markupsafe
 from urllib.parse import parse_qs
 from .hookspecs import hookimpl
@@ -19,9 +18,10 @@ from .view_row_pages import enable_yolo_view_row_pages
 from .edit_row_pages import enable_yolo_edit_row_pages
 from .utils import is_row_page
 from .yolo_command import yolo_command
-from .dedux_command import dedux_command
+from .dux_command import dux_command, prepare_connection
+from .undux_command import undux_command
 from .column_stats_schema import DUX_IDS, DUX_PENDING_ROWS, DUX_COLUMN_STATS, DUX_COLUMN_STATS_OPS, DUX_COLUMN_STATS_VALUES
-from .column_stats import compute_dux_column_stats, autosuggest_column, start_column_stats_indexer
+from .column_stats import prepare_dux_column_stats, autosuggest_column, start_dux_column_stats_indexer
 
 PLUGIN = 'datasette-ui-extras'
 
@@ -213,7 +213,7 @@ def startup(datasette):
     enable_yolo_edit_row_pages()
 
     async def inner():
-        await compute_dux_column_stats(datasette)
+        await prepare_dux_column_stats(datasette)
 
     return inner
 
@@ -322,27 +322,12 @@ def get_metadata(datasette, key, database, table):
     return rv
 
 @datasette.hookimpl
-def prepare_connection(conn):
-    conn.enable_load_extension(True)
-
-    sqlite_sqlean.load(conn, 'crypto')
-    conn.enable_load_extension(False)
-
-    # Try to enable WAL and synchronous = NORMAL mode
-    conn.execute('PRAGMA journal_mode = WAL')
-    conn.execute('PRAGMA synchronous = NORMAL')
-
-    # Foreign keys are great, databases should enforce them.
-    conn.execute('PRAGMA foreign_keys = ON')
-
-
-@datasette.hookimpl
 def asgi_wrapper(datasette):
     def wrap_with_indexer(app):
         @wraps(app)
         async def handle_request(scope, receive, send):
             if not hasattr(datasette, "_dux_column_stats_indexer"):
-                start_column_stats_indexer(datasette)
+                start_dux_column_stats_indexer(datasette)
             datasette._dux_column_stats_indexer = True
             await app(scope, receive, send)
 

@@ -85,12 +85,9 @@ table_schemas = {
     DUX_COLUMN_STATS_VALUES: CREATE_DUX_COLUMN_STATS_VALUES,
 }
 
-async def ensure_schema_and_triggers(db):
+def ensure_schema_and_triggers(conn):
     # We take a very brute force approach: if any table has the wrong schema,
     # we'll drop all the tables.
-    await db.execute_write_fn(ensure_schema_and_triggers_conn)
-
-def ensure_schema_and_triggers_conn(conn):
     ensure_schema(conn)
     ensure_triggers(conn)
 
