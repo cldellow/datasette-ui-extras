@@ -1,0 +1,12 @@
+{
+  "name": "datasette-ui-extras",
+  "version": "0.0.1",
+  "description": "JS tests for dux",
+  "main": "index.js",
+  "repository": "git@github.com:cldellow/datasette-ui-extras.git",
+  "author": "Colin Dellow <cldellow@gmail.com>",
+  "license": "APACHE-2",
+  "devDependencies": {
+    "cypress": "^12.6.0"
+  }
+}

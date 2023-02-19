@@ -11,3 +11,6 @@ venv
 dist
 build
 *.db*
+node_modules
+cypress/screenshots/
+cypress/videos/
