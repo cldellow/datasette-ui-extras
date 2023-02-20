@@ -45,4 +45,9 @@ describe('dux smoke tests', () => {
   })
 
 
+  it('can omnisearch', () => {
+    cy.visit('http://localhost:8888/diy/posts')
+    cy.get('#_search').focus().type('discussion');
+    cy.contains('tags contains discussion').click();
+  });
 })
