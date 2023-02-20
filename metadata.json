@@ -12,7 +12,8 @@
                 "badges": {
                     "facets": [
                         "name"
-                    ]
+                    ],
+                    "label_column": "id"
                 },
                 "users": {
                     "label_column": "display_name"
