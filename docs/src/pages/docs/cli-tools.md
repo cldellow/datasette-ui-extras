@@ -45,7 +45,7 @@ Yolo mode will do the following:
 - update or create Datesette's `metadata.json` file with a very permissive set
   of permissions for this database
 
-**Yolo mode is only suitable for Datasette instances that protected at the
+**Yolo mode is only suitable for Datasette instances that are protected at the
 network level.** For example, if you are running Datasette on your laptop's
 loopback interface, or behind a load balancer that enforces authentication,
 such as [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy).
