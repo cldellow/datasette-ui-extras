@@ -358,6 +358,13 @@ def extra_template_vars(request, datasette, database, view_name):
     if view_name != 'table':
         return {}
 
+    db = datasette.databases[database]
+
+    # Really, what we _should_ do is introspect if this database has the
+    # dux stats tables. For now, just confirm it's not DuckDB.
+    if hasattr(db, 'engine') and db.engine == 'duckdb':
+        return {}
+
     return {
         'supports_search': True
     }
