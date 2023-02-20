@@ -16,6 +16,8 @@ async def omnisearch(datasette, db, table, q):
     if not q:
         return []
 
+    ok_columns = (datasette.plugin_config('datasette-ui-extras', db.name, table) or {}).get('omnisearch-columns', None)
+
     # TODO: dates
 
     banned_columns = {}
@@ -24,7 +26,7 @@ async def omnisearch(datasette, db, table, q):
     label_column = await db.label_column_for_table(table)
 
     row_results = []
-    if label_column:
+    if label_column and (not ok_columns or label_column in ok_columns):
         banned_columns[label_column] = True
         def get_results(conn):
             return suggest_row_results(datasette, conn, db.name, table, label_column, q)
@@ -35,6 +37,9 @@ async def omnisearch(datasette, db, table, q):
 
     fkey_results = []
     for other_table, my_column, other_column in fkey_columns:
+        if ok_columns and not my_column in ok_columns:
+            continue
+
         banned_columns[my_column] = True
         label_column = await db.label_column_for_table(other_table)
 
@@ -45,6 +50,9 @@ async def omnisearch(datasette, db, table, q):
     all_columns = list(await db.execute('select di.name, dcs.* from dux_column_stats dcs join dux_ids di on di.id = dcs.column_id where table_id = (select id from dux_ids where name = ?)', [table]))
     string_results = []
     for column in all_columns:
+        if ok_columns and not column['name'] in ok_columns:
+            continue
+
         if column['name'] in banned_columns:
             continue
         # column__exact={}, column__contains={}

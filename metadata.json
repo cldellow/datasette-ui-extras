@@ -43,6 +43,13 @@
                 },
                 "users": {
                     "label_column": "display_name"
+                },
+                "posts": {
+                    "plugins": {
+                        "datasette-ui-extras": {
+                            "omnisearch-columns": ["post_type", "owner_user_id", "tags", "title"]
+                        }
+                    }
                 }
             }
         },
