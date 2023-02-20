@@ -1,6 +1,9 @@
 from .column_stats import autosuggest_column
 
 async def omnisearch(datasette, db, table, q):
+    if not q:
+        return []
+
     # Do we have a title column? Search for entries based on that.
     label_column = await db.label_column_for_table(table)
 

@@ -617,6 +617,9 @@ FROM xs
 
 
 def autosuggest_column(conn, table, column, q):
+    if not q:
+        return []
+
     # Consider max 100 things before sorting - gives generally good results, and is defensive
     # against someone autocompleting the empty string
     raw_rows = conn.execute(
