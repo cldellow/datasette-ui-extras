@@ -11,6 +11,7 @@ from urllib.parse import parse_qs
 from .hookspecs import hookimpl
 from .facets import enable_yolo_facets, facets_extra_body_script
 from .filters import enable_yolo_arraycontains_filter, enable_yolo_exact_filter, yolo_filters_from_request
+from .omnisearch import omnisearch
 from .plugin import pm
 from .edit_controls import render_cell_edit_control
 from .new_facets import StatsFacet, YearFacet, YearMonthFacet
@@ -35,6 +36,7 @@ css_files = [
     "layout-row-page.css",
     "compact-cogs.css",
     "mobile-column-menu.css",
+    "omnisearch.css",
     "edit-row/",
 ]
 
@@ -45,6 +47,7 @@ js_files = [
     'lazy-facets.js',
     'layout-row-page.js',
     "mobile-column-menu.js",
+    "omnisearch.js",
     "edit-row/",
 ]
 
@@ -256,8 +259,23 @@ def register_routes():
             )
         ),
         (r"^/(?P<dbname>.*)/(?P<tablename>.*)/-/dux-autosuggest-column$", handle_autosuggest_column),
+        (r"^/(?P<dbname>.*)/(?P<tablename>.*)/-/dux-omnisearch$", handle_omnisearch),
         (r"^/(?P<dbname>.*)/(?P<tablename>.*)/(?P<pkey>.*)/-/dux-redirect-after-edit$", handle_redirect_after_edit)
     ]
+
+async def handle_omnisearch(datasette, request):
+    qs = parse_qs(request.query_string)
+
+    q = qs.get('q', [''])[0]
+    dbname = request.url_vars["dbname"]
+    tablename = request.url_vars["tablename"]
+
+    db = datasette.get_database(dbname)
+
+    suggestions = await omnisearch(datasette, db, tablename, q)
+    return Response.json(
+        suggestions
+    )
 
 async def handle_autosuggest_column(datasette, request):
     qs = parse_qs(request.query_string)

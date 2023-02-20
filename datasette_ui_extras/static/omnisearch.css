@@ -1,0 +1,7 @@
+body.table .awesomplete {
+  width: 60%;
+}
+
+body.table .awesomplete #_search {
+  width: 100%;
+}
