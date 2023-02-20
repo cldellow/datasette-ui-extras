@@ -352,3 +352,12 @@ def asgi_wrapper(datasette):
         return handle_request
 
     return wrap_with_indexer
+
+@datasette.hookimpl
+def extra_template_vars(request, datasette, database, view_name):
+    if view_name != 'table':
+        return {}
+
+    return {
+        'supports_search': True
+    }
