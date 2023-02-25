@@ -45,9 +45,16 @@ describe('dux smoke tests', () => {
   })
 
 
-  it('can omnisearch', () => {
+  it('can omnisearch on tables', () => {
     cy.visit('http://localhost:8888/diy/posts')
     cy.get('#_search').focus().type('discussion');
     cy.contains('tags contains discussion').click();
   });
+
+  it('can omnisearch on views', () => {
+    cy.visit('http://localhost:8888/diy/questions')
+    cy.get('#_search').focus().type('discussion');
+    cy.contains('tags contains discussion').click();
+  });
+
 })

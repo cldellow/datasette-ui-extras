@@ -47,10 +47,10 @@ async def row_edit_params_raw(datasette, request, database, table):
     if not allowed:
         return None
 
-    rv = await get_editable_columns(datasette, request, database, table)
+    rv = await get_editable_columns(datasette, database, table)
     return rv
 
-async def get_editable_columns(datasette, request, database, table):
+async def get_editable_columns(datasette, database, table):
     db = datasette.get_database(database)
 
     is_view = await db.view_exists(table)
@@ -92,7 +92,6 @@ async def get_editable_columns(datasette, request, database, table):
         rv[column] = view_info['table_info']['columns'][column]
 
     await annotate_columns(rv, db, view_info['base_table'])
-
     return rv
 
 async def annotate_columns(rv, db, table_name):
