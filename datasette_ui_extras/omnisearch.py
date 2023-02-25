@@ -62,7 +62,7 @@ async def omnisearch(datasette, db, table, q):
     all_columns = list(await db.execute('select di.name, dcs.* from dux_column_stats dcs join dux_ids di on di.id = dcs.column_id where table_id = (select id from dux_ids where name = ?)', [base_table]))
     string_results = []
     for column in all_columns:
-        if not column in known_columns:
+        if not column['name'] in known_columns:
             continue
 
         if ok_columns and not column['name'] in ok_columns:
