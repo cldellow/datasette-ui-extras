@@ -9,16 +9,22 @@ from .column_stats import ensure_empty_rows_for_db, index_next_backfill_batch, i
 
 @hookimpl
 def prepare_connection(conn):
-    conn.enable_load_extension(True)
-    sqlite_sqlean.load(conn, 'crypto')
-    conn.enable_load_extension(False)
+    old_level = conn.isolation_level
+    try:
+        conn.isolation_level = None
+        conn.enable_load_extension(True)
+        sqlite_sqlean.load(conn, 'crypto')
+        conn.enable_load_extension(False)
 
-    # Try to enable WAL and synchronous = NORMAL mode
-    conn.execute('PRAGMA journal_mode = WAL')
-    conn.execute('PRAGMA synchronous = NORMAL')
 
-    # Foreign keys are great, databases should enforce them.
-    conn.execute('PRAGMA foreign_keys = ON')
+        # Try to enable WAL and synchronous = NORMAL mode
+        conn.execute('PRAGMA journal_mode = WAL')
+        conn.execute('PRAGMA synchronous = NORMAL')
+
+        # Foreign keys are great, databases should enforce them.
+        conn.execute('PRAGMA foreign_keys = ON')
+    finally:
+        conn.isolation_level = old_level
 
 @hookimpl(specname='register_commands')
 def dux_command(cli):
