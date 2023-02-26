@@ -52,8 +52,11 @@ async def omnisearch(datasette, db, table, q):
         if ok_columns and not my_column in ok_columns:
             continue
 
-        banned_columns[my_column] = True
         label_column = await db.label_column_for_table(other_table)
+        if not label_column:
+            continue
+
+        banned_columns[my_column] = True
 
         def get_results(conn):
             return suggest_fkey_results(datasette, conn, db.name, base_table, table, my_column, other_table, other_column, label_column, q)
