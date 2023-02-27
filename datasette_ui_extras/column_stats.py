@@ -483,7 +483,7 @@ WHERE typeof(value) == 'text' AND length(value) <= 100 and not (value >= '1800-0
 GROUP BY 1, 2
 ORDER BY 3 DESC
 )
-SELECT value, hash, count, (select json_group_array(value) from (select value from json_each(keys) limit 10)) AS keys
+SELECT value, hash, count, (select json_group_array(json(value)) from (select value from json_each(keys) limit 10)) AS keys
 FROM distincts
 '''.format(sql)
 
@@ -522,7 +522,7 @@ WHERE typeof(value) == 'text' AND length(value) <= 100 and not (value >= '1800-0
 GROUP BY 1, 2
 ORDER BY 3 DESC
 )
-SELECT value, hash, count, (select json_group_array(value) from (select value from json_each(keys) limit 10)) AS keys
+SELECT value, hash, count, (select json_group_array(json(value)) from (select value from json_each(keys) limit 10)) AS keys
 FROM distincts
 '''.format(sql)
 
