@@ -248,6 +248,20 @@ def get_pk_columns(conn, table):
 
     return pks
 
+def fixup(obj):
+    # Entries in obj are either foo_literal, in which case their value should be taken as is,
+    # or foo_blob, in which case their value is a bytes array hex-encoded.
+    rv = {}
+    for k, v in obj.items():
+        if k.endswith('_literal'):
+            rv[k[0:-8]] = v
+        elif k.endswith('_blob'):
+            rv[k[0:-5]] = bytes.fromhex(v)
+        else:
+            raise Exception('unexpected key {}'.format(k))
+
+    return rv
+
 def index_pending_rows(conn):
     with conn:
         next_row = list(conn.execute('select id, the_rowid, "table", "old", "new" from dux_pending_rows order by id limit 1'))
@@ -259,6 +273,9 @@ def index_pending_rows(conn):
 
         old = json.loads(old or '{}')
         new = json.loads(new or '{}')
+
+        old = fixup(old)
+        new = fixup(new)
 
         pk_columns = get_pk_columns(conn, table)
 

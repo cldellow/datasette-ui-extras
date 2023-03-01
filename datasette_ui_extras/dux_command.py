@@ -36,17 +36,20 @@ def dux_command(cli):
         "Add datasette-ui-extras's triggers and stats tables to the given database(s)."
 
         for file in files:
-            conn = sqlite3.connect(str(file))
-            conn.row_factory = sqlite3.Row
-            prepare_connection(conn)
+            dux_the_file(str(file))
 
-            ensure_schema_and_triggers(conn)
-            ensure_empty_rows_for_db(conn)
+def dux_the_file(file):
+    conn = sqlite3.connect(str(file))
+    conn.row_factory = sqlite3.Row
+    prepare_connection(conn)
 
-            while index_next_backfill_batch(conn):
-                pass
+    ensure_schema_and_triggers(conn)
+    ensure_empty_rows_for_db(conn)
 
-            while index_pending_rows(conn):
-                pass
+    while index_next_backfill_batch(conn):
+        pass
 
-            conn.close()
+    while index_pending_rows(conn):
+        pass
+
+    conn.close()

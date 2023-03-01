@@ -126,7 +126,7 @@ def get_stats_triggers(conn, table, is_rowid_table):
 
         sep = ''
         for column in columns:
-            rv.append("{sep}'{column}', {prefix}.\"{column}\"".format(column=column, prefix=prefix, sep=sep))
+            rv.append("{sep}CASE WHEN typeof({prefix}.\"{column}\") == 'blob' THEN '{column}_blob' ELSE '{column}_literal' END, CASE WHEN typeof({prefix}.\"{column}\") == 'blob' THEN hex({prefix}.\"{column}\") ELSE {prefix}.\"{column}\" END".format(column=column, prefix=prefix, sep=sep))
             sep = ', '
 
         rv.append(')')
