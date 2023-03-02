@@ -446,7 +446,7 @@ def index_pending_rows(conn):
                         # 3) Increment the coutn
                         count += 1
                         # 4) Insert the pkey
-                        pks = [x for x in pks if x != pk] + [pk]
+                        pks = [x for x in pks if x != pk][0:9] + [pk]
 
                         where_args['count'] = count
                         where_args['pks'] = json.dumps(pks)
