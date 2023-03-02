@@ -45,7 +45,7 @@ def dux_command(cli):
 def dux_the_file(file):
     conn = sqlite3.connect(str(file))
     conn.row_factory = sqlite3.Row
-    prepare_connection(conn)
+    prepare_connection(conn, 'not-internal')
 
     ensure_schema_and_triggers(conn)
     ensure_empty_rows_for_db(conn)
