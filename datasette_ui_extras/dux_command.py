@@ -9,6 +9,10 @@ from .column_stats import ensure_empty_rows_for_db, index_next_backfill_batch, i
 
 @hookimpl
 def prepare_connection(conn):
+    # Don't enable fkey checks on _internal, see https://github.com/simonw/datasette/issues/2032
+    if database == '_internal':
+        return
+
     old_level = conn.isolation_level
     try:
         conn.isolation_level = None
