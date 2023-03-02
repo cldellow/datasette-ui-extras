@@ -8,7 +8,7 @@ from .column_stats_schema import ensure_schema_and_triggers
 from .column_stats import ensure_empty_rows_for_db, index_next_backfill_batch, index_pending_rows
 
 @hookimpl
-def prepare_connection(conn):
+def prepare_connection(conn, database):
     # Don't enable fkey checks on _internal, see https://github.com/simonw/datasette/issues/2032
     if database == '_internal':
         return
