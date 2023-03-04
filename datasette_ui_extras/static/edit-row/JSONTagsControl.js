@@ -90,7 +90,16 @@ window.JSONTagsControl = class JSONTagsControl {
           const json = await rv.json();
 
           const values = json.map(x => x.value);
-          awesomplete.list = json.map(x => x.value);
+
+          let exists = false;
+          for (const entry of json)
+            if (entry.value === e.target.value)
+              exists = true;
+
+          awesomplete.list = [
+            ...(exists ? [] : [e.target.value]),
+            ...json.map(x => x.value)
+          ];
           awesomplete.evaluate();
         });
 
