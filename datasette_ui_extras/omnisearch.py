@@ -82,7 +82,7 @@ async def omnisearch(datasette, db, table, q):
                 return suggest_string_results(datasette, conn, db.name, base_table, table, column['name'], q, 'contains', column['name'] + '__contains={}')
             string_results = string_results + list(await db.execute_fn(get_results))[0:3]
 
-        elif column['texts'] + column['nulls'] == column['count'] and column['texts_newline'] == 0 and not dateish(column):
+        elif (column['texts'] + column['nulls']) * 1.1 >= column['count'] and column['texts_newline'] == 0 and not dateish(column):
             # print('simple text: {}'.format(column['name']))
             banned_columns[column['name']] = True
             def get_results(conn):
