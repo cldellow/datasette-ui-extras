@@ -1,5 +1,6 @@
 from .column_stats import autosuggest_column
 from .utils import get_editable_columns
+from datasette.utils import path_from_row_pks
 
 def dateish(column):
     min = column['min']
@@ -131,10 +132,17 @@ def suggest_row_results(datasette, conn, db, table, link_table, column, q):
 
     rv = []
     for hit in hits[0:3]:
+        # if this happens, it means we've deleted the last examplar from the dux_column_stats_values
+        # table. My gut is that that won't happen very often, so let's fail loudly so
+        # we can investigate if it does.
+        if not hit['pks']:
+            raise Exception('omnisearch failed to find pks for a hit, q={} hit={}'.format(q, hit))
+
+        pks = hit['pks'][0]
+        link_id = path_from_row_pks(pks, list(pks.keys()), 'rowid' in pks)
         rv.append({
             'value': '...' + hit['value'],
-            # TODO: this is wrong - doesn't support tilde encoding or multi-column pkeys
-            'url': '{}/{}'.format(datasette.urls.table(db, link_table), list(hit['pks'][0].values())[0])
+            'url': '{}/{}'.format(datasette.urls.table(db, link_table), link_id)
         })
 
     return rv
